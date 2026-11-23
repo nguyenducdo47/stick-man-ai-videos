@@ -7,11 +7,76 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Phase 1: full schema. Phase 0 placeholder keeps migrations wiring valid.
-model HealthCheck {
+enum ProjectStatus {
+  DRAFT
+  SCRIPTING
+  STORYBOARD
+  READY
+}
+
+model User {
+  id          BigInt    @id @default(autoincrement())
+  publicId    String    @unique @default(uuid()) @db.Uuid
+  email       String?   @unique
+  displayName String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  projects    Project[]
+}
+
+model Project {
+  id                BigInt        @id @default(autoincrement())
+  publicId          String        @unique @default(uuid()) @db.Uuid
+  userId            BigInt
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  topic             String
+  targetDurationSec Int?
+  targetSceneCount  Int?
+  languages         String[]
+  visualStyle       String?
+  scriptDraft       String?       @db.Text
+  status            ProjectStatus @default(DRAFT)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  scenes            Scene[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Scene {
+  id              BigInt              @id @default(autoincrement())
+  publicId        String              @unique @default(uuid()) @db.Uuid
+  projectId       BigInt
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sortOrder       Int
+  title           String?
+  description     String?             @db.Text
+  characterAction String?             @db.Text
+  animationPreset String?
+  cameraPreset    String?
+  durationSec     Float?
+  config          Json?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  localizations   SceneLocalization[]
+
+  @@unique([projectId, sortOrder])
+  @@index([projectId])
+}
+
+model SceneLocalization {
   id        BigInt   @id @default(autoincrement())
   publicId  String   @unique @default(uuid()) @db.Uuid
-  note      String?
+  sceneId   BigInt
+  scene     Scene    @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  locale    String
+  narration String?  @db.Text
+  subtitles String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([sceneId, locale])
+  @@index([sceneId])
 }

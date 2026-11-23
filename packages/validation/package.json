@@ -18,6 +18,7 @@
     "lint": "echo \"lint pending\""
   },
   "dependencies": {
+    "@ai-video-studio/shared": "workspace:*",
     "zod": "^3.24.1"
   },
   "devDependencies": {

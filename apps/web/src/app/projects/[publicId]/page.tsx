@@ -1,0 +1,98 @@
+'use client';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ProjectResponse, SceneListResponse } from '@ai-video-studio/validation';
+import { useParams } from 'next/navigation';
+
+import { ProjectScriptPanel } from '@/components/project-script-panel';
+import { SceneEditorCard } from '@/components/scene-editor-card';
+import { StudioShell } from '@/components/studio-shell';
+import { Button } from '@/components/ui/button';
+import { apiFetch } from '@/lib/api';
+
+export default function ProjectDetailPage() {
+  const params = useParams<{ publicId: string }>();
+  const publicId = params.publicId;
+  const queryClient = useQueryClient();
+
+  const projectQuery = useQuery({
+    queryKey: ['project', publicId],
+    queryFn: () => apiFetch<ProjectResponse>(`/v1/projects/${publicId}`),
+    enabled: Boolean(publicId),
+  });
+
+  const scenesQuery = useQuery({
+    queryKey: ['scenes', publicId],
+    queryFn: () => apiFetch<SceneListResponse>(`/v1/projects/${publicId}/scenes`),
+    enabled: Boolean(publicId),
+  });
+
+  const addScene = useMutation({
+    mutationFn: () =>
+      apiFetch(`/v1/projects/${publicId}/scenes`, {
+        method: 'POST',
+        body: JSON.stringify({ title: `Scene ${(scenesQuery.data?.items.length ?? 0) + 1}` }),
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['scenes', publicId] });
+      void queryClient.invalidateQueries({ queryKey: ['project', publicId] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+  });
+
+  const project = projectQuery.data;
+
+  return (
+    <StudioShell
+      title={project?.title ?? 'Project'}
+      subtitle={project?.topic ?? (projectQuery.isLoading ? 'Loading…' : 'Storyboard editor')}
+    >
+      {projectQuery.isError ? (
+        <p className="text-sm text-red-400">{(projectQuery.error as Error).message}</p>
+      ) : null}
+
+      {project ? (
+        <>
+          <div className="mb-6 flex flex-wrap gap-3 text-xs text-zinc-500">
+            <span className="rounded-full border border-zinc-800 px-3 py-1">{project.status}</span>
+            <span className="rounded-full border border-zinc-800 px-3 py-1">
+              {project.languages.join(' · ')}
+            </span>
+            <span className="rounded-full border border-zinc-800 px-3 py-1">
+              {project.sceneCount} scenes
+            </span>
+          </div>
+          <ProjectScriptPanel project={project} />
+        </>
+      ) : null}
+
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-lg font-medium">Storyboard</h2>
+        <Button
+          type="button"
+          variant="outline"
+          className="border-zinc-700"
+          disabled={addScene.isPending}
+          onClick={() => addScene.mutate()}
+        >
+          Add scene
+        </Button>
+      </div>
+
+      <ul className="mt-6 space-y-6">
+        {scenesQuery.data?.items.map((scene) => (
+          <li key={scene.publicId}>
+            <SceneEditorCard scene={scene} projectPublicId={publicId} />
+          </li>
+        ))}
+      </ul>
+
+      {scenesQuery.data?.items.length === 0 ? (
+        <p className="mt-6 text-sm text-zinc-600">
+          Add scenes, then edit description, presets, and VI/EN narration. Changes are saved to
+          PostgreSQL.
+        </p>
+      ) : null}
+    </StudioShell>
+  );
+}

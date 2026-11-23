@@ -1,44 +1,92 @@
-const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+'use client';
 
-export default function Home() {
+import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import type { DashboardStats, ProjectListResponse } from '@ai-video-studio/validation';
+
+import { StudioShell } from '@/components/studio-shell';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiFetch } from '@/lib/api';
+
+export default function DashboardPage() {
+  const statsQuery = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: () => apiFetch<DashboardStats>('/v1/dashboard/stats'),
+  });
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => apiFetch<ProjectListResponse>('/v1/projects'),
+  });
+
+  const stats = statsQuery.data;
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <header className="border-b border-zinc-800 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Local-first studio</p>
-            <h1 className="text-xl font-semibold tracking-tight">AI Video Studio</h1>
-          </div>
-          <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs text-zinc-400">
-            Phase 0 — Foundation
-          </span>
+    <StudioShell title="Dashboard" subtitle="Recent projects and studio statistics">
+      {statsQuery.isError ? null : stats ? (
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Projects" value={stats.projectCount} />
+          <StatCard label="Scenes" value={stats.sceneCount} />
+          <StatCard label="Draft" value={stats.statusCounts.DRAFT} />
+          <StatCard label="Ready" value={stats.statusCounts.READY} />
         </div>
-      </header>
+      ) : (
+        <p className="mb-8 text-sm text-zinc-600">Loading statistics…</p>
+      )}
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8">
-          <h2 className="text-2xl font-semibold">3D Stickman video pipeline</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
-            Monorepo scaffold is in place. Next phases add PostgreSQL projects, Ollama script and
-            storyboard generation, 3D preview, local TTS, and Remotion rendering — Vietnamese and
-            English exports share the same visual scenes.
-          </p>
-          <dl className="mt-8 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <dt className="text-xs uppercase text-zinc-500">Web UI</dt>
-              <dd className="mt-1 text-sm">Next.js App Router</dd>
-            </div>
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <dt className="text-xs uppercase text-zinc-500">API</dt>
-              <dd className="mt-1 text-sm font-mono text-zinc-300">{apiBase}</dd>
-            </div>
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <dt className="text-xs uppercase text-zinc-500">Character</dt>
-              <dd className="mt-1 text-sm">White stickman · red hoodie · black sneakers</dd>
-            </div>
-          </dl>
-        </section>
-      </main>
-    </div>
+      {isLoading ? (
+        <p className="text-sm text-zinc-500">Loading projects…</p>
+      ) : isError ? (
+        <div className="rounded-xl border border-red-900/50 bg-red-950/30 p-4 text-sm text-red-200">
+          Cannot reach API. Start{' '}
+          <code className="text-red-100">pnpm --filter @ai-video-studio/api start:dev</code>.{' '}
+          {(error as Error).message}
+        </div>
+      ) : data?.items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-zinc-700 p-12 text-center">
+          <p className="text-zinc-400">No projects yet.</p>
+          <Link href="/projects/new" className="mt-4 inline-block text-sm text-red-400 hover:text-red-300">
+            Create your first stickman video →
+          </Link>
+        </div>
+      ) : (
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {data?.items.map((project) => (
+            <li key={project.publicId}>
+              <Link
+                href={`/projects/${project.publicId}`}
+                className="block rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 transition hover:border-zinc-600"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="font-semibold">{project.title}</h2>
+                  <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-xs text-zinc-400">
+                    {project.status}
+                  </span>
+                </div>
+                <p className="mt-2 line-clamp-2 text-sm text-zinc-500">{project.topic}</p>
+                <p className="mt-4 text-xs text-zinc-600">
+                  {project.sceneCount} scenes · {project.languages.join(', ')}
+                </p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </StudioShell>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <Card className="border-zinc-800 bg-zinc-900/50">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xs font-normal uppercase tracking-wide text-zinc-500">
+          {label}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-2xl font-semibold tabular-nums">{value}</p>
+      </CardContent>
+    </Card>
   );
 }

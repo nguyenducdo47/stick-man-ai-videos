@@ -53,3 +53,5 @@ If the API on port 11434 accepts TCP but HTTP hangs, restart the Ollama app from
 ```powershell
 Copy-Item .env.example .env
 ```
+
+Prisma commands (`pnpm db:push`, `pnpm db:migrate`, `pnpm db:generate`) load **`DATABASE_URL` from the repo root `.env`** via `packages/database` — you do not need a separate `.env` inside `packages/database`.

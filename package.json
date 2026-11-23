@@ -12,7 +12,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "db:generate": "pnpm --filter @ai-video-studio/database db:generate",
     "db:migrate": "pnpm --filter @ai-video-studio/database db:migrate",
-    "db:push": "pnpm --filter @ai-video-studio/database db:push"
+    "db:push": "pnpm --filter @ai-video-studio/database db:push",
+    "db:seed": "pnpm --filter @ai-video-studio/database db:seed"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

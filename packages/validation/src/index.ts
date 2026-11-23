@@ -7,3 +7,7 @@ export const healthResponseSchema = z.object({
 });
 
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
+
+export * from './project.js';
+export * from './scene.js';
+export * from './dashboard.js';

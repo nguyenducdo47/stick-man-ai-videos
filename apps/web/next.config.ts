@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ['@ai-video-studio/validation', '@ai-video-studio/shared'],
 };
 
 export default nextConfig;
