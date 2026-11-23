@@ -1,0 +1,10 @@
+---
+description: Monorepo-wide conventions
+globs:
+alwaysApply: true
+---
+
+- pnpm workspace; Turbo for build orchestration.
+- Phase-gated delivery: do not skip database/AI phases when adding features.
+- Local-first: Ollama + local TTS; no paid cloud AI.
+- Zod at API boundaries; strict TypeScript everywhere.

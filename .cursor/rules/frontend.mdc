@@ -1,0 +1,8 @@
+---
+description: Next.js web app
+globs: apps/web/**
+---
+
+- App Router, Tailwind, shadcn/ui (add in Phase 1+).
+- TanStack Query for API data; React Hook Form + Zod for forms.
+- Dark creative-studio theme; no fake static production data.

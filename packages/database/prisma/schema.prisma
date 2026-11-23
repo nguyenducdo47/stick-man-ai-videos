@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Phase 1: full schema. Phase 0 placeholder keeps migrations wiring valid.
+model HealthCheck {
+  id        BigInt   @id @default(autoincrement())
+  publicId  String   @unique @default(uuid()) @db.Uuid
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

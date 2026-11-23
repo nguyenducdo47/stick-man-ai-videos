@@ -1,0 +1,7 @@
+---
+description: Testing strategy
+globs: **/*.{spec,test}.{ts,tsx}
+---
+
+- Vitest for packages; Jest for Nest API; Playwright E2E in Phase 7.
+- Never assert mocked AI/TTS as integration success without explicit mock flag.

@@ -1,0 +1,7 @@
+---
+description: Remotion and FFmpeg rendering
+globs: packages/video-engine/**
+---
+
+- Deterministic frame timing; no Date.now() or unseeded random in render path.
+- Separate MP4 per locale; shared scene graph.

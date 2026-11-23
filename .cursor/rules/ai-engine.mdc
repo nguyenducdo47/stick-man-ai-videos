@@ -1,0 +1,7 @@
+---
+description: LLM providers and AI Director
+globs: packages/ai-engine/**
+---
+
+- OllamaProvider + MockLLMProvider only for tests.
+- generateStructuredOutput must validate with Zod; never execute model-produced code.
