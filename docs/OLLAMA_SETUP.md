@@ -17,7 +17,13 @@ Or call the API after `pnpm --filter @ai-video-studio/api start:dev`:
 
 `GET http://127.0.0.1:3001/v1/ollama/status`
 
-The UI settings page (Phase 2) will surface the same data.
+The UI settings page (`/settings/ai`) surfaces the same data.
+
+## Qwen3 and empty responses
+
+Models such as **qwen3:4b** may put output in a `thinking` field unless disabled. The studio sets **`think: false`** on Ollama `/api/generate` calls. Use a recent Ollama release that supports this flag; otherwise generation can fail with an empty `response`.
+
+Script/storyboard runs can take **1–10+ minutes** on CPU-only hosts; `OLLAMA_TIMEOUT_MS` defaults to 300000 in the API factory.
 
 ## PATH (optional)
 

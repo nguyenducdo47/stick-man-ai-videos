@@ -1,19 +1,40 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ProjectResponse, SceneListResponse } from '@ai-video-studio/validation';
+import type {
+  ProjectResponse,
+  SceneListResponse,
+  SceneResponse,
+} from '@ai-video-studio/validation';
 import { useParams } from 'next/navigation';
+import { useState } from 'react';
 
 import { ProjectScriptPanel } from '@/components/project-script-panel';
 import { SceneEditorCard } from '@/components/scene-editor-card';
 import { StudioShell } from '@/components/studio-shell';
 import { Button } from '@/components/ui/button';
-import { apiFetch } from '@/lib/api';
+import { ApiError, apiFetch } from '@/lib/api';
+
+type StoryboardGenerateResponse = {
+  project: ProjectResponse;
+  scenes: SceneResponse[];
+};
+
+function formatApiError(err: unknown): string {
+  if (err instanceof ApiError) {
+    const body = err.body as { message?: string | string[] } | undefined;
+    if (typeof body?.message === 'string') return body.message;
+    return err.message;
+  }
+  return err instanceof Error ? err.message : 'Request failed';
+}
 
 export default function ProjectDetailPage() {
   const params = useParams<{ publicId: string }>();
   const publicId = params.publicId;
   const queryClient = useQueryClient();
+  const [synopsis, setSynopsis] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const projectQuery = useQuery({
     queryKey: ['project', publicId],
@@ -25,6 +46,21 @@ export default function ProjectDetailPage() {
     queryKey: ['scenes', publicId],
     queryFn: () => apiFetch<SceneListResponse>(`/v1/projects/${publicId}/scenes`),
     enabled: Boolean(publicId),
+  });
+
+  const generateStoryboard = useMutation({
+    mutationFn: () =>
+      apiFetch<StoryboardGenerateResponse>(
+        `/v1/projects/${publicId}/ai/storyboard`,
+        { method: 'POST', body: JSON.stringify({}) },
+      ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['scenes', publicId] });
+      void queryClient.invalidateQueries({ queryKey: ['project', publicId] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      setAiError(null);
+    },
+    onError: (err) => setAiError(formatApiError(err)),
   });
 
   const addScene = useMutation({
@@ -62,22 +98,38 @@ export default function ProjectDetailPage() {
               {project.sceneCount} scenes
             </span>
           </div>
-          <ProjectScriptPanel project={project} />
+          <ProjectScriptPanel project={project} onSynopsis={setSynopsis} />
+          {synopsis ? (
+            <p className="mb-6 rounded-lg border border-zinc-800 bg-zinc-900/30 px-4 py-3 text-sm text-zinc-400">
+              {synopsis}
+            </p>
+          ) : null}
         </>
       ) : null}
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-lg font-medium">Storyboard</h2>
-        <Button
-          type="button"
-          variant="outline"
-          className="border-zinc-700"
-          disabled={addScene.isPending}
-          onClick={() => addScene.mutate()}
-        >
-          Add scene
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            className="bg-red-600 hover:bg-red-500"
+            disabled={generateStoryboard.isPending || addScene.isPending}
+            onClick={() => generateStoryboard.mutate()}
+          >
+            {generateStoryboard.isPending ? 'Generating storyboard…' : 'Generate storyboard'}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="border-zinc-700"
+            disabled={addScene.isPending || generateStoryboard.isPending}
+            onClick={() => addScene.mutate()}
+          >
+            Add scene
+          </Button>
+        </div>
       </div>
+      {aiError ? <p className="mt-3 text-sm text-red-400">{aiError}</p> : null}
 
       <ul className="mt-6 space-y-6">
         {scenesQuery.data?.items.map((scene) => (

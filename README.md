@@ -8,7 +8,8 @@ Local-first AI video production studio for Windows: Ollama scripts, shared 3D st
 |-------|--------|--------|
 | 0 | Monorepo, Docker/Laragon docs, health + Ollama probe | Done |
 | 1 | PostgreSQL, project/scene CRUD, dashboard, storyboard editor, shadcn | Done — [PHASE_1_TEST_REPORT](./docs/result_testing/PHASE_1_TEST_REPORT.md) |
-| 2+ | Ollama AI, TTS, 3D, render | Planned |
+| 2 | Ollama AI Director (script + storyboard), `AiGeneration` audit | Done — [PHASE_2_TEST_REPORT](./docs/result_testing/PHASE_2_TEST_REPORT.md) |
+| 3+ | TTS, 3D, render | Planned |
 
 ## Prerequisites
 

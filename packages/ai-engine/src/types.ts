@@ -10,4 +10,7 @@ export interface GenerateTextOptions {
   system?: string;
   temperature?: number;
   timeoutMs?: number;
+  jsonMode?: boolean;
+  /** Cap tokens for faster local runs (Ollama `num_predict`). */
+  numPredict?: number;
 }

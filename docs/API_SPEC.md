@@ -28,3 +28,21 @@ Base URL: `http://127.0.0.1:3001`
 | PATCH | `/v1/scenes/:publicId/localizations/:locale` | Upsert VI/EN narration |
 
 All IDs in URLs are **UUID `publicId`**, not internal bigint keys.
+
+## Phase 2 — AI Director (Ollama)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/projects/:publicId/ai/script` | Generate script via Ollama; saves `scriptDraft`, sets status `SCRIPTING` |
+| POST | `/v1/projects/:publicId/ai/storyboard` | Generate scenes from `scriptDraft`; replaces all scenes; status `STORYBOARD` |
+
+Optional JSON body: `{ "model"?: string, "temperature"?: 0–1 }`.
+
+Responses:
+
+- **Script:** `{ project, synopsis }`
+- **Storyboard:** `{ project, scenes }`
+
+Errors: `400` if storyboard requested without script; `503` if Ollama unreachable or model missing. Generation attempts are logged in `AiGeneration` (PostgreSQL).
+
+See [AI_DIRECTOR.md](./AI_DIRECTOR.md).

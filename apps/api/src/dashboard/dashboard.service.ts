@@ -13,7 +13,9 @@ export class DashboardService {
 
   async getStats(): Promise<DashboardStats> {
     const userId = await this.users.getLocalUserId();
-    const projectCount = await this.prisma.client.project.count({ where: { userId } });
+    const projectCount = await this.prisma.client.project.count({
+      where: { userId },
+    });
     const sceneCount = await this.prisma.client.scene.count({
       where: { project: { userId } },
     });

@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { z } from 'zod';
 import {
   type CreateSceneInput,
@@ -48,7 +56,12 @@ export class ScenesController {
   }
 
   @Delete('v1/scenes/:publicId')
-  remove(@Param(new ZodValidationPipe(scenePublicParamsSchema)) params: { publicId: string }) {
+  remove(
+    @Param(new ZodValidationPipe(scenePublicParamsSchema))
+    params: {
+      publicId: string;
+    },
+  ) {
     return this.scenes.remove(params.publicId);
   }
 

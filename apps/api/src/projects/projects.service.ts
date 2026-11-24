@@ -79,6 +79,11 @@ export class ProjectsService {
     return { deleted: true as const, publicId };
   }
 
+  /** Full Prisma row for owned project (includes internal id). */
+  async getOwnedProject(publicId: string) {
+    return this.findProjectOrThrow(publicId);
+  }
+
   private async findProjectOrThrow(publicId: string) {
     const userId = await this.users.getLocalUserId();
     const project = await this.prisma.client.project.findFirst({

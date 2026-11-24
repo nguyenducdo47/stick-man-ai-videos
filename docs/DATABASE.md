@@ -1,4 +1,4 @@
-# Database (Phase 1)
+# Database (Phase 1–2)
 
 PostgreSQL via Prisma in `packages/database`.
 
@@ -8,6 +8,7 @@ PostgreSQL via Prisma in `packages/database`.
 - `Project` — title, topic, languages[], status, script draft.
 - `Scene` — shared storyboard row per project (`sortOrder`, presets, JSON `config`).
 - `SceneLocalization` — per scene + locale (`vi` / `en`) narration and subtitles.
+- `AiGeneration` — audit log of AI script/storyboard runs (`kind`, `status`, `model`, `errorMessage`).
 
 Public UUIDs (`publicId`) are used in API routes; bigint `id` values stay internal.
 

@@ -1,19 +1,18 @@
 import { Controller, Get } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { APP_NAME } from '@ai-video-studio/shared';
-import { OllamaProvider } from '@ai-video-studio/ai-engine';
 import { healthResponseSchema } from '@ai-video-studio/validation';
 
+import { OllamaFactory } from '../ai/ollama.factory';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Controller()
 export class SystemController {
-  constructor(private readonly prisma: PrismaService) {}
-  private readonly ollama = new OllamaProvider({
-    baseUrl: process.env.OLLAMA_BASE_URL,
-    defaultModel: process.env.OLLAMA_DEFAULT_MODEL,
-    fallbackModel: process.env.OLLAMA_FALLBACK_MODEL,
-    timeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS ?? 10_000),
-  });
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ollamaFactory: OllamaFactory,
+    private readonly config: ConfigService,
+  ) {}
 
   @Get('health')
   getHealth() {
@@ -29,9 +28,9 @@ export class SystemController {
   getInfo() {
     return {
       name: APP_NAME,
-      phase: 1,
+      phase: 2,
       message:
-        'Project and scene CRUD with PostgreSQL — AI storyboard lands in Phase 2.',
+        'Ollama AI Director: script and storyboard generation with structured JSON.',
     };
   }
 
@@ -48,19 +47,21 @@ export class SystemController {
 
   @Get('v1/ollama/status')
   async getOllamaStatus() {
-    const health = await this.ollama.checkHealth();
+    const ollama = this.ollamaFactory.create();
+    const defaultModel =
+      this.config.get<string>('OLLAMA_DEFAULT_MODEL') ?? 'qwen3:4b';
+    const health = await ollama.checkHealth();
     if (!health.reachable) {
       return {
         reachable: false,
         error: health.error,
         models: [] as string[],
-        defaultModel: process.env.OLLAMA_DEFAULT_MODEL ?? 'qwen3:4b',
+        defaultModel,
       };
     }
     try {
-      const models = await this.ollama.listModels();
-      const defaultModel = process.env.OLLAMA_DEFAULT_MODEL ?? 'qwen3:4b';
-      const hasDefault = await this.ollama.verifyModel(defaultModel);
+      const models = await ollama.listModels();
+      const hasDefault = await ollama.verifyModel(defaultModel);
       return {
         reachable: true,
         models,
@@ -73,7 +74,7 @@ export class SystemController {
         reachable: true,
         error: message,
         models: [] as string[],
-        defaultModel: process.env.OLLAMA_DEFAULT_MODEL ?? 'qwen3:4b',
+        defaultModel,
       };
     }
   }

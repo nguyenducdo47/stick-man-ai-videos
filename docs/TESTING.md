@@ -24,4 +24,15 @@
 - [ ] Dashboard stats cards (`/v1/dashboard/stats`)
 - [ ] `GET /v1/system/db` → `{ connected: true }`
 
-See [result_testing/PHASE_1_TEST_REPORT.md](./result_testing/PHASE_1_TEST_REPORT.md) for latest run.
+See [result_testing/PHASE_1_TEST_REPORT.md](./result_testing/PHASE_1_TEST_REPORT.md) and [PHASE_2_TEST_REPORT.md](./result_testing/PHASE_2_TEST_REPORT.md) for latest runs.
+
+## Phase 2 manual checklist
+
+- [ ] Ollama running; `qwen3:4b` installed (`GET /v1/ollama/status` → `defaultModelAvailable: true`)
+- [ ] API + web dev servers restarted after `pnpm build` if UI shows chunk errors
+- [ ] `/settings/ai` shows reachable + models
+- [ ] Create project with clear **topic**, duration, scene count
+- [ ] **Generate script** — wait 1–10+ min on slow CPU; script shows Scene 1…
+- [ ] **Generate storyboard** — scenes appear with VI/EN narration
+- [ ] Phase 1 still works: dashboard stats, scene editor, PATCH script save
+- [ ] `pnpm --filter @ai-video-studio/ai-engine test`

@@ -72,7 +72,13 @@ export class OllamaProvider implements LLMProvider {
         prompt,
         system: options?.system,
         stream: false,
-        options: { temperature: options?.temperature ?? 0.7 },
+        // Qwen3 models may spend the token budget in `thinking` and leave `response` empty.
+        think: false,
+        format: options?.jsonMode ? 'json' : undefined,
+        options: {
+          temperature: options?.temperature ?? 0.7,
+          ...(options?.numPredict != null ? { num_predict: options.numPredict } : {}),
+        },
       }),
     });
 
@@ -80,11 +86,22 @@ export class OllamaProvider implements LLMProvider {
       throw new Error(`Ollama generate failed: HTTP ${res.status}`);
     }
 
-    const data = (await res.json()) as { response?: string };
-    if (!data.response?.trim()) {
-      throw new Error('Ollama returned an empty response');
+    const data = (await res.json()) as {
+      response?: string;
+      thinking?: string;
+      done_reason?: string;
+    };
+    const text = data.response?.trim();
+    if (text) {
+      return text;
     }
-    return data.response;
+    const hint =
+      data.done_reason === 'length'
+        ? 'Token limit reached (try again or increase num_predict).'
+        : data.thinking?.trim()
+          ? 'Model used thinking-only output; ensure Ollama supports think:false for Qwen3.'
+          : 'Unknown cause.';
+    throw new Error(`Ollama returned an empty response. ${hint}`);
   }
 
   private async fetchWithTimeout(

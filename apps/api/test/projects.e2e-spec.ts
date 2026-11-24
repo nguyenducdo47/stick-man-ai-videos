@@ -80,7 +80,9 @@ describe('Projects (e2e)', () => {
   });
 
   it('GET /v1/dashboard/stats returns counts', async () => {
-    const res = await request(app.getHttpServer()).get('/v1/dashboard/stats').expect(200);
+    const res = await request(app.getHttpServer())
+      .get('/v1/dashboard/stats')
+      .expect(200);
     expect(res.body.projectCount).toBeGreaterThanOrEqual(1);
     expect(typeof res.body.sceneCount).toBe('number');
   });
@@ -100,12 +102,30 @@ describe('Projects (e2e)', () => {
       .expect(200);
   });
 
+  it('POST /v1/projects/:id/ai/storyboard without script returns 400', async () => {
+    const fresh = await request(app.getHttpServer())
+      .post('/v1/projects')
+      .send({
+        title: 'No script project',
+        topic: 'AI negative test',
+        languages: ['vi'],
+        targetSceneCount: 2,
+      })
+      .expect(201);
+    await request(app.getHttpServer())
+      .post(`/v1/projects/${fresh.body.publicId as string}/ai/storyboard`)
+      .send({})
+      .expect(400);
+  });
+
   it('DELETE /v1/scenes/:id removes scene', async () => {
     const list = await request(app.getHttpServer()).get(
       `/v1/projects/${createdPublicId}/scenes`,
     );
     const sceneId = list.body.items[0].publicId as string;
-    await request(app.getHttpServer()).delete(`/v1/scenes/${sceneId}`).expect(200);
+    await request(app.getHttpServer())
+      .delete(`/v1/scenes/${sceneId}`)
+      .expect(200);
     const after = await request(app.getHttpServer()).get(
       `/v1/projects/${createdPublicId}/scenes`,
     );
