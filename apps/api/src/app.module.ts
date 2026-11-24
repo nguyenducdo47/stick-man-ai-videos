@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AiModule } from './ai/ai.module';
+import { PreviewModule } from './preview/preview.module';
 import { ProjectsModule } from './projects/projects.module';
 import { SystemModule } from './system/system.module';
 import { UsersModule } from './users/users.module';
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module';
     DashboardModule,
     ProjectsModule,
     AiModule,
+    PreviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

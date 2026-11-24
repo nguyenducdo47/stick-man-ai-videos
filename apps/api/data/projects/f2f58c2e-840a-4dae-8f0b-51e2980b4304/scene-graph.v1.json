@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "projectPublicId": "f2f58c2e-840a-4dae-8f0b-51e2980b4304",
+  "visualStyle": "stickman-red-hoodie",
+  "character": {
+    "style": "stickman-red-hoodie",
+    "colors": {
+      "body": "#f5f5f5",
+      "hoodie": "#dc2626",
+      "shoes": "#171717"
+    }
+  },
+  "scenes": [
+    {
+      "scenePublicId": "6e841fc2-e5c3-47a1-bc2d-69dd05d2ada7",
+      "sortOrder": 0,
+      "title": "Scene : Phase2 acceptance intro",
+      "durationSec": 8,
+      "animationPreset": "idle",
+      "cameraPreset": "wide-shot",
+      "description": "3D stickman in minimalist white body, red hoodie, black sneakers standing still",
+      "characterAction": "Standing still",
+      "timeline": {
+        "animationId": "idle",
+        "cameraId": "wide-shot",
+        "easing": "ease-in-out"
+      }
+    },
+    {
+      "scenePublicId": "7329d655-fed0-43f9-a7c0-e4cc965db03e",
+      "sortOrder": 1,
+      "title": "Scene: Click button prompt",
+      "durationSec": 8,
+      "animationPreset": "point",
+      "cameraPreset": "wide-shot",
+      "description": "Stickman pointing to a clock showing 30 seconds",
+      "characterAction": "Pointing to clock",
+      "timeline": {
+        "animationId": "point",
+        "cameraId": "wide-shot",
+        "easing": "ease-in-out"
+      }
+    }
+  ],
+  "totalDurationSec": 16,
+  "compiledAt": "2026-11-24T06:38:46.831Z"
+}

@@ -46,3 +46,14 @@ Responses:
 Errors: `400` if storyboard requested without script; `503` if Ollama unreachable or model missing. Generation attempts are logged in `AiGeneration` (PostgreSQL).
 
 See [AI_DIRECTOR.md](./AI_DIRECTOR.md).
+
+## Phase 3 — Scene graph (3D)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/v1/projects/:publicId/scene-graph` | Compile stickman graph (`?save=true` optional) |
+| POST | `/v1/projects/:publicId/scene-graph/compile` | Compile + write `data/projects/<id>/scene-graph.v1.json` |
+
+Response: `{ projectPublicId, graph, savedPath }` — `graph` validated by `sceneGraphDocumentSchema`.
+
+See [STICKMAN_3D.md](./STICKMAN_3D.md).

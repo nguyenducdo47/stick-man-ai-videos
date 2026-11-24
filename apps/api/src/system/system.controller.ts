@@ -28,9 +28,9 @@ export class SystemController {
   getInfo() {
     return {
       name: APP_NAME,
-      phase: 2,
+      phase: 3,
       message:
-        'Ollama AI Director: script and storyboard generation with structured JSON.',
+        'Stickman scene graph compile + 3D preview; Ollama script/storyboard from Phase 2.',
     };
   }
 

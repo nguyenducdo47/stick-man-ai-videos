@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "projectPublicId": "2f6911bb-91c4-483d-a815-8af2c5494e38",
+  "visualStyle": "stickman-red-hoodie",
+  "character": {
+    "style": "stickman-red-hoodie",
+    "colors": {
+      "body": "#f5f5f5",
+      "hoodie": "#dc2626",
+      "shoes": "#171717"
+    }
+  },
+  "scenes": [
+    {
+      "scenePublicId": "e957e8d2-316a-4d1c-834d-777f95968c00",
+      "sortOrder": 0,
+      "title": "Morning Routine",
+      "durationSec": 8,
+      "animationPreset": "idle",
+      "cameraPreset": "wide-shot",
+      "description": "Minimalist 3D stickman in white body, red hoodie, black sneakers stands at small desk with open laptop, sunlight streaming through window",
+      "characterAction": "Wakes up, stretches, checks phone for morning news",
+      "timeline": {
+        "animationId": "idle",
+        "cameraId": "wide-shot",
+        "easing": "ease-in-out"
+      }
+    },
+    {
+      "scenePublicId": "36619c33-8fed-4ae4-b39d-75e53c5846e2",
+      "sortOrder": 1,
+      "title": "The Commute",
+      "durationSec": 7,
+      "animationPreset": "walk",
+      "cameraPreset": "wide-shot",
+      "description": "Stickman walks down simple street with few buildings, city skyline in background, morning traffic",
+      "characterAction": "Walks quickly, checks watch, small bus passes by",
+      "timeline": {
+        "animationId": "walk",
+        "cameraId": "wide-shot",
+        "easing": "ease-in-out"
+      }
+    },
+    {
+      "scenePublicId": "61585146-4acc-43d3-bccf-cac131baa6b2",
+      "sortOrder": 2,
+      "title": "The Office",
+      "durationSec": 6,
+      "animationPreset": "idle",
+      "cameraPreset": "close-up",
+      "description": "Stickman sits at small desk with computer, open notebook, coffee cup",
+      "characterAction": "Types on keyboard, smiles, takes sip of coffee",
+      "timeline": {
+        "animationId": "idle",
+        "cameraId": "close-up",
+        "easing": "ease-in-out"
+      }
+    },
+    {
+      "scenePublicId": "798c2e17-f8b0-4c8a-8087-bcae14da3e15",
+      "sortOrder": 3,
+      "title": "The Work-Life Balance",
+      "durationSec": 9,
+      "animationPreset": "idle",
+      "cameraPreset": "medium-shot",
+      "description": "Stickman sits on chair with coffee cup, looks out window, smiles",
+      "characterAction": "Takes deep breath, looks at watch, smiles",
+      "timeline": {
+        "animationId": "idle",
+        "cameraId": "medium-shot",
+        "easing": "ease-in-out"
+      }
+    }
+  ],
+  "totalDurationSec": 30,
+  "compiledAt": "2026-11-24T06:38:08.597Z"
+}

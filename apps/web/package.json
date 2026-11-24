@@ -4,14 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-video-studio/animation-engine": "workspace:*",
     "@ai-video-studio/shared": "workspace:*",
     "@ai-video-studio/validation": "workspace:*",
+    "@react-three/drei": "^10.0.6",
+    "@react-three/fiber": "^9.1.2",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-label": "^2.1.17",
     "@radix-ui/react-slot": "^1.5.0",
@@ -24,6 +28,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.0",
     "tailwind-merge": "^3.7.1",
+    "three": "^0.172.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.1"
   },
@@ -32,6 +37,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.172.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "postcss": "^8",

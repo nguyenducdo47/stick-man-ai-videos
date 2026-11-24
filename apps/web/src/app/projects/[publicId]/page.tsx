@@ -10,6 +10,7 @@ import { useParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { ProjectScriptPanel } from '@/components/project-script-panel';
+import { SceneGraphPanel } from '@/components/scene-graph-panel';
 import { SceneEditorCard } from '@/components/scene-editor-card';
 import { StudioShell } from '@/components/studio-shell';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,7 @@ export default function ProjectDetailPage() {
       void queryClient.invalidateQueries({ queryKey: ['scenes', publicId] });
       void queryClient.invalidateQueries({ queryKey: ['project', publicId] });
       void queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      void queryClient.invalidateQueries({ queryKey: ['scene-graph', publicId] });
       setAiError(null);
     },
     onError: (err) => setAiError(formatApiError(err)),
@@ -145,6 +147,10 @@ export default function ProjectDetailPage() {
           PostgreSQL.
         </p>
       ) : null}
+
+      <div className="mt-10">
+        <SceneGraphPanel projectPublicId={publicId} />
+      </div>
     </StudioShell>
   );
 }

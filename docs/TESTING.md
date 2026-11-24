@@ -24,7 +24,7 @@
 - [ ] Dashboard stats cards (`/v1/dashboard/stats`)
 - [ ] `GET /v1/system/db` → `{ connected: true }`
 
-See [result_testing/PHASE_1_TEST_REPORT.md](./result_testing/PHASE_1_TEST_REPORT.md) and [PHASE_2_TEST_REPORT.md](./result_testing/PHASE_2_TEST_REPORT.md) for latest runs.
+See [PHASE_1_TEST_REPORT.md](./result_testing/PHASE_1_TEST_REPORT.md), [PHASE_2_TEST_REPORT.md](./result_testing/PHASE_2_TEST_REPORT.md), and [PHASE_3_TEST_REPORT.md](./result_testing/PHASE_3_TEST_REPORT.md) for latest runs.
 
 ## Phase 2 manual checklist
 
@@ -36,3 +36,11 @@ See [result_testing/PHASE_1_TEST_REPORT.md](./result_testing/PHASE_1_TEST_REPORT
 - [ ] **Generate storyboard** — scenes appear with VI/EN narration
 - [ ] Phase 1 still works: dashboard stats, scene editor, PATCH script save
 - [ ] `pnpm --filter @ai-video-studio/ai-engine test`
+
+## Phase 3 manual checklist
+
+- [ ] Project with storyboard scenes (manual or AI)
+- [ ] `GET /v1/projects/:id/scene-graph` returns `graph.version === 1`
+- [ ] UI: **3D scene graph** panel on project page — preview + scene tabs
+- [ ] **Save graph to data/** → file under `data/projects/<uuid>/scene-graph.v1.json`
+- [ ] `pnpm --filter @ai-video-studio/animation-engine test`

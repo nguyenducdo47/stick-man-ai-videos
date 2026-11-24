@@ -6,6 +6,7 @@
 - **apps/api** — NestJS REST, Prisma, job enqueue.
 - **apps/worker** — BullMQ consumers for TTS and render.
 - **packages/ai-engine** — Ollama + Mock LLM providers, AI Director (Phase 2).
+- **packages/animation-engine** — Scene graph compiler + animation/camera presets (Phase 3).
 - **packages/database** — Prisma schema and client.
 - **packages/validation** — Zod schemas shared by API and web.
 - **services/local-tts** — Kokoro/Piper FastAPI (Phase 4).

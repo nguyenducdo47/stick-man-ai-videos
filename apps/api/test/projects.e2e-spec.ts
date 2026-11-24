@@ -102,6 +102,26 @@ describe('Projects (e2e)', () => {
       .expect(200);
   });
 
+  it('GET /v1/projects/:id/scene-graph compiles storyboard', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/v1/projects/${createdPublicId}/scene-graph`)
+      .expect(200);
+    expect(res.body.graph.version).toBe(1);
+    expect(res.body.graph.projectPublicId).toBe(createdPublicId);
+    expect(Array.isArray(res.body.graph.scenes)).toBe(true);
+  });
+
+  it('POST /v1/projects/:id/scene-graph/compile writes JSON', async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/v1/projects/${createdPublicId}/scene-graph/compile`)
+      .send({})
+      .expect(201);
+    expect(res.body.savedPath).toMatch(
+      /^projects\/[0-9a-f-]+\/scene-graph\.v1\.json$/i,
+    );
+    expect(res.body.graph.scenes.length).toBeGreaterThanOrEqual(1);
+  });
+
   it('POST /v1/projects/:id/ai/storyboard without script returns 400', async () => {
     const fresh = await request(app.getHttpServer())
       .post('/v1/projects')
