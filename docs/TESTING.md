@@ -57,3 +57,14 @@ See [PHASE_1_TEST_REPORT.md](./result_testing/PHASE_1_TEST_REPORT.md), [PHASE_2_
 - [ ] Optional: `POST /v1/tts/preview` returns WAV bytes
 
 See [PHASE_4_TEST_REPORT.md](./result_testing/PHASE_4_TEST_REPORT.md).
+
+## Phase 5 manual checklist
+
+- [ ] `FFMPEG_PATH` in `.env` or `ffmpeg` on PATH; `GET /v1/render/status` → `ffmpegAvailable: true`
+- [ ] TTS WAV for all scenes (vi and/or en)
+- [ ] Project page → **Export video** → **Render VI MP4** (first run may bundle Remotion — wait)
+- [ ] `data/renders/projects/<uuid>/vi.mp4` exists; inline player plays
+- [ ] `GET /v1/projects/:id/video/vi` streams MP4
+- [ ] Phase 1–4 regression: scene graph, TTS, dashboard
+
+See [PHASE_5_TEST_REPORT.md](./result_testing/PHASE_5_TEST_REPORT.md).

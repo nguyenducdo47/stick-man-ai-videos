@@ -11,6 +11,7 @@ import { useParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { ProjectScriptPanel } from '@/components/project-script-panel';
+import { ProjectExportPanel } from '@/components/project-export-panel';
 import { SceneGraphPanel } from '@/components/scene-graph-panel';
 import { SceneEditorCard } from '@/components/scene-editor-card';
 import { StudioShell } from '@/components/studio-shell';
@@ -179,6 +180,13 @@ export default function ProjectDetailPage() {
           Add scenes, then edit description, presets, and VI/EN narration. Changes are saved to
           PostgreSQL.
         </p>
+      ) : null}
+
+      {project ? (
+        <ProjectExportPanel
+          projectPublicId={publicId}
+          languages={project.languages}
+        />
       ) : null}
 
       <div className="mt-10">

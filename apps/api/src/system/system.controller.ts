@@ -28,9 +28,9 @@ export class SystemController {
   getInfo() {
     return {
       name: APP_NAME,
-      phase: 4,
+      phase: 5,
       message:
-        'Local TTS narration + stickman scene graph; Ollama script/storyboard from Phase 2.',
+        'Remotion MP4 export per locale; TTS narration + stickman scene graph; Ollama script/storyboard.',
     };
   }
 

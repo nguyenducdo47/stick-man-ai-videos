@@ -39,6 +39,7 @@ test-results/
 data/projects/
 data/audio/
 data/renders/
+data/studio/remotion-bundle/
 data/models/
 
 # Python

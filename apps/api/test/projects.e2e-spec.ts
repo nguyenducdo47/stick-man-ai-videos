@@ -154,6 +154,26 @@ describe('Projects (e2e)', () => {
     expect(res.body.korvaVoiceVi.length).toBeGreaterThan(0);
   });
 
+  it('GET /v1/render/status reports ffmpeg probe', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/v1/render/status')
+      .expect(200);
+    expect(typeof res.body.ffmpegAvailable).toBe('boolean');
+    expect(res.body.remotionEntry).toMatch(/remotion[\\/]index\.ts$/i);
+  });
+
+  it('POST /v1/projects/:id/render without audio is rejected', async () => {
+    const status = await request(app.getHttpServer()).get('/v1/render/status');
+    const res = await request(app.getHttpServer())
+      .post(`/v1/projects/${createdPublicId}/render`)
+      .send({ locale: 'vi' });
+    if (status.body.ffmpegAvailable) {
+      expect(res.status).toBe(400);
+    } else {
+      expect(res.status).toBe(503);
+    }
+  });
+
   it('POST scene TTS without narration returns 400', async () => {
     const list = await request(app.getHttpServer()).get(
       `/v1/projects/${createdPublicId}/scenes`,

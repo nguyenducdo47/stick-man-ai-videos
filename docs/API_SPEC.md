@@ -75,3 +75,16 @@ Python service (default `http://127.0.0.1:5001`): `GET /health`, `POST /v1/synth
 Errors: `400` empty narration; `503` TTS down; `422` missing VI voice (legacy SAPI path). No mock audio on failure.
 
 See [TTS_VIETNAMESE.md](./TTS_VIETNAMESE.md), [services/local-tts/README.md](../services/local-tts/README.md).
+
+## Phase 5 — Remotion render
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/v1/render/status` | FFmpeg availability + Remotion bundle entry |
+| GET | `/v1/projects/:publicId/renders` | Render rows per locale |
+| POST | `/v1/projects/:publicId/render` | Body `{ locale }` → MP4 under `data/renders/` (200) |
+| GET | `/v1/projects/:publicId/video/:locale` | Stream MP4 (`Cache-Control: no-store`) |
+
+Errors: `400` missing scene audio / render failure; `503` FFmpeg missing. Render queue concurrency **1** (same pattern as TTS).
+
+See [RENDER.md](./RENDER.md).

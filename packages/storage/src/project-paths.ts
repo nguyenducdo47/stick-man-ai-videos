@@ -40,3 +40,25 @@ export function sceneNarrationAudioFile(
     ),
   );
 }
+
+/** Relative path from storage root — MP4 export per project locale. */
+export function projectRenderVideoRelPath(
+  projectPublicId: string,
+  locale: string,
+): string {
+  return join('renders', 'projects', projectPublicId, `${locale}.mp4`).replace(
+    /\\/g,
+    '/',
+  );
+}
+
+export function projectRenderVideoFile(
+  storageRoot: string,
+  projectPublicId: string,
+  locale: string,
+): string {
+  return join(
+    storageRoot,
+    ...projectRenderVideoRelPath(projectPublicId, locale).split('/'),
+  );
+}

@@ -33,6 +33,6 @@ With default `STORAGE_ROOT=./data`, the API resolves to the **monorepo** folder 
 
 Per-scene VI/EN WAV files under `data/audio/` (see `SceneLocalization.audioPath`). API compiles stickman graph unchanged; Remotion (Phase 5+) will use graph timing + audio duration.
 
-## Next (Phase 5+)
+## Phase 5 — Remotion export
 
-Remotion render and FFmpeg mux using the same graph for frame timing.
+`packages/video-engine/remotion` mirrors web preview: stickman geometry, animation preset (`useCurrentFrame` / fps), camera preset from `CAMERA_PRESETS`, grid + floor. Re-render after composition changes: restart API or delete `data/studio/remotion-bundle/`.
