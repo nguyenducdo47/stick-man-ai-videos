@@ -29,6 +29,10 @@ On the project page, **3D scene graph** refreshes from the API; pick a scene tab
 
 With default `STORAGE_ROOT=./data`, the API resolves to the **monorepo** folder `data/` when started from `apps/api` (`resolveDataRoot` in `packages/storage`).
 
-## Next (Phase 4+)
+## Phase 4 — narration audio
 
-Local TTS attaches per-locale audio; Remotion uses the same graph for frame timing.
+Per-scene VI/EN WAV files under `data/audio/` (see `SceneLocalization.audioPath`). API compiles stickman graph unchanged; Remotion (Phase 5+) will use graph timing + audio duration.
+
+## Next (Phase 5+)
+
+Remotion render and FFmpeg mux using the same graph for frame timing.

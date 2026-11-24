@@ -138,6 +138,38 @@ describe('Projects (e2e)', () => {
       .expect(400);
   });
 
+  it('GET /v1/tts/status exposes local TTS probe', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/v1/tts/status')
+      .expect(200);
+    expect(typeof res.body.reachable).toBe('boolean');
+    expect(res.body.serviceUrl).toMatch(/^http/);
+  });
+
+  it('GET /v1/tts/preferences returns korvaVoiceVi string', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/v1/tts/preferences')
+      .expect(200);
+    expect(typeof res.body.korvaVoiceVi).toBe('string');
+    expect(res.body.korvaVoiceVi.length).toBeGreaterThan(0);
+  });
+
+  it('POST scene TTS without narration returns 400', async () => {
+    const list = await request(app.getHttpServer()).get(
+      `/v1/projects/${createdPublicId}/scenes`,
+    );
+    const sceneId = list.body.items[0]?.publicId as string | undefined;
+    expect(sceneId).toBeDefined();
+    await request(app.getHttpServer())
+      .patch(`/v1/scenes/${sceneId}/localizations/en`)
+      .send({ narration: '' })
+      .expect(200);
+    await request(app.getHttpServer())
+      .post(`/v1/scenes/${sceneId}/localizations/en/tts`)
+      .send({})
+      .expect(400);
+  });
+
   it('DELETE /v1/scenes/:id removes scene', async () => {
     const list = await request(app.getHttpServer()).get(
       `/v1/projects/${createdPublicId}/scenes`,

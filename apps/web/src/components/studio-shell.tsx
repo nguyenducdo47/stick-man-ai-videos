@@ -29,6 +29,9 @@ export function StudioShell({
             <Button asChild variant="ghost" className="text-zinc-400 hover:text-zinc-100">
               <Link href="/settings/ai">Ollama</Link>
             </Button>
+            <Button asChild variant="ghost" className="text-zinc-400 hover:text-zinc-100">
+              <Link href="/settings/tts">TTS</Link>
+            </Button>
             <Button asChild className="bg-red-600 hover:bg-red-500">
               <Link href="/projects/new">New project</Link>
             </Button>

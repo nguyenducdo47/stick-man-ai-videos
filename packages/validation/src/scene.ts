@@ -31,6 +31,9 @@ export const sceneLocalizationResponseSchema = z.object({
   locale: localeSchema,
   narration: z.string().nullable(),
   subtitles: z.string().nullable(),
+  audioPath: z.string().nullable(),
+  audioUrl: z.string().nullable(),
+  audioGeneratedAt: z.string().datetime().nullable(),
 });
 
 export const sceneResponseSchema = z.object({

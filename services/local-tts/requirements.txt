@@ -1,3 +1,9 @@
-# Phase 4 — pin versions when implementing Kokoro/Piper integration.
+# Phase 4 — local narration TTS (no cloud APIs)
 fastapi>=0.115.0
-uvicorn>=0.32.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+pyttsx3>=2.90
+# Vietnamese-first ONNX TTS (downloads weights from Hugging Face on first run)
+korvatts>=0.1.3
+onnxruntime>=1.19.0

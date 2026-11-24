@@ -13,3 +13,4 @@ export * from './scene.js';
 export * from './dashboard.js';
 export * from './ai.js';
 export * from './scene-graph.js';
+export * from './tts.js';

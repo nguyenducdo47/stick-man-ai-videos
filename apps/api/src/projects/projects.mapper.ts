@@ -25,6 +25,15 @@ export function toProjectResponse(project: ProjectWithCount): ProjectResponse {
   };
 }
 
+function sceneLocaleAudioUrl(
+  scenePublicId: string,
+  locale: string,
+  audioPath: string | null,
+): string | null {
+  if (!audioPath) return null;
+  return `/v1/scenes/${scenePublicId}/audio/${locale}`;
+}
+
 export function toSceneResponse(scene: SceneWithLocales): SceneResponse {
   return {
     publicId: scene.publicId,
@@ -39,6 +48,9 @@ export function toSceneResponse(scene: SceneWithLocales): SceneResponse {
       locale: loc.locale as 'vi' | 'en',
       narration: loc.narration,
       subtitles: loc.subtitles,
+      audioPath: loc.audioPath,
+      audioUrl: sceneLocaleAudioUrl(scene.publicId, loc.locale, loc.audioPath),
+      audioGeneratedAt: loc.audioGeneratedAt?.toISOString() ?? null,
     })),
     createdAt: scene.createdAt.toISOString(),
     updatedAt: scene.updatedAt.toISOString(),

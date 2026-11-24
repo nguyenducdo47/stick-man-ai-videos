@@ -119,10 +119,16 @@ export class ScenesService {
       },
     });
 
+    const audioUrl = localization.audioPath
+      ? `/v1/scenes/${scenePublicId}/audio/${localization.locale}`
+      : null;
     return {
       locale: localization.locale as 'vi' | 'en',
       narration: localization.narration,
       subtitles: localization.subtitles,
+      audioPath: localization.audioPath,
+      audioUrl,
+      audioGeneratedAt: localization.audioGeneratedAt?.toISOString() ?? null,
     };
   }
 

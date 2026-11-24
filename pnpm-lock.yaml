@@ -26,6 +26,9 @@ importers:
       '@ai-video-studio/animation-engine':
         specifier: workspace:*
         version: link:../../packages/animation-engine
+      '@ai-video-studio/audio-engine':
+        specifier: workspace:*
+        version: link:../../packages/audio-engine
       '@ai-video-studio/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -270,6 +273,13 @@ importers:
         version: 2.1.9(@types/node@20.19.43)(terser@5.51.4)
 
   packages/audio-engine:
+    dependencies:
+      '@ai-video-studio/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@ai-video-studio/validation':
+        specifier: workspace:*
+        version: link:../validation
     devDependencies:
       typescript:
         specifier: ^5.7.2

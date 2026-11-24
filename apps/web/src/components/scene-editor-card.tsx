@@ -1,7 +1,13 @@
 'use client';
 
-import type { SceneResponse, UpdateSceneInput } from '@ai-video-studio/validation';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type {
+  SceneResponse,
+  SceneTtsResponse,
+  TtsPreferencesResponse,
+  UpdateSceneInput,
+} from '@ai-video-studio/validation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -9,7 +15,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { apiFetch } from '@/lib/api';
+import { apiAssetUrlVersioned, apiFetch } from '@/lib/api';
 
 type LocaleKey = 'vi' | 'en';
 
@@ -21,6 +27,13 @@ export function SceneEditorCard({
   projectPublicId: string;
 }) {
   const queryClient = useQueryClient();
+
+  const ttsPrefsQuery = useQuery({
+    queryKey: ['tts-preferences'],
+    queryFn: () => apiFetch<TtsPreferencesResponse>('/v1/tts/preferences'),
+    staleTime: 10_000,
+  });
+  const korvaVoiceVi = ttsPrefsQuery.data?.korvaVoiceVi;
   const [title, setTitle] = useState(scene.title ?? '');
   const [description, setDescription] = useState(scene.description ?? '');
   const [characterAction, setCharacterAction] = useState(scene.characterAction ?? '');
@@ -75,6 +88,23 @@ export function SceneEditorCard({
       }),
     onSuccess: () => {
       setMessage('Narration saved');
+      invalidate();
+    },
+    onError: (err) => setMessage((err as Error).message),
+  });
+
+  const synthesizeTts = useMutation({
+    mutationFn: (locale: LocaleKey) =>
+      apiFetch<SceneTtsResponse>(
+        `/v1/scenes/${scene.publicId}/localizations/${locale}/tts`,
+        { method: 'POST', body: JSON.stringify({}) },
+      ),
+    onSuccess: (result) => {
+      const voiceNote =
+        result.locale === 'vi' && result.korvaVoiceVi
+          ? ` (giọng ${result.korvaVoiceVi})`
+          : '';
+      setMessage(`Narration audio generated${voiceNote}`);
       invalidate();
     },
     onError: (err) => setMessage((err as Error).message),
@@ -179,29 +209,75 @@ export function SceneEditorCard({
             className="border-zinc-700 bg-zinc-950"
           />
         </div>
-        {(['vi', 'en'] as const).map((locale) => (
-          <div key={locale} className="space-y-2">
-            <Label htmlFor={`${locale}-${scene.publicId}`}>
-              Narration ({locale.toUpperCase()})
-            </Label>
-            <Textarea
-              id={`${locale}-${scene.publicId}`}
-              value={narration[locale]}
-              rows={3}
-              onChange={(e) => setNarration((prev) => ({ ...prev, [locale]: e.target.value }))}
-              className="border-zinc-700 bg-zinc-950"
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              disabled={saveLocale.isPending}
-              onClick={() => saveLocale.mutate({ locale, text: narration[locale] })}
-            >
-              Save {locale.toUpperCase()}
-            </Button>
-          </div>
-        ))}
+        {(['vi', 'en'] as const).map((locale) => {
+          const loc = scene.localizations.find((l) => l.locale === locale);
+          const audioSrc =
+            loc?.audioUrl != null
+              ? apiAssetUrlVersioned(loc.audioUrl, loc.audioGeneratedAt)
+              : null;
+          return (
+            <div key={locale} className="space-y-2">
+              <Label htmlFor={`${locale}-${scene.publicId}`}>
+                Narration ({locale.toUpperCase()})
+              </Label>
+              {locale === 'vi' && korvaVoiceVi ? (
+                <p className="text-xs text-zinc-600">
+                  Giọng Korva từ{' '}
+                  <Link href="/settings/tts" className="text-zinc-400 underline hover:text-zinc-200">
+                    Settings → TTS
+                  </Link>
+                  : <code className="text-zinc-500">{korvaVoiceVi}</code>
+                </p>
+              ) : null}
+              <Textarea
+                id={`${locale}-${scene.publicId}`}
+                value={narration[locale]}
+                rows={3}
+                onChange={(e) => setNarration((prev) => ({ ...prev, [locale]: e.target.value }))}
+                className="border-zinc-700 bg-zinc-950"
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled={saveLocale.isPending}
+                  onClick={() => saveLocale.mutate({ locale, text: narration[locale] })}
+                >
+                  Save {locale.toUpperCase()}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-zinc-700"
+                  disabled={
+                    synthesizeTts.isPending ||
+                    narration[locale].trim() === ''
+                  }
+                  onClick={() => synthesizeTts.mutate(locale)}
+                >
+                  {synthesizeTts.isPending ? 'TTS…' : `Generate TTS (${locale})`}
+                </Button>
+              </div>
+              {audioSrc ? (
+                <audio
+                  key={`${loc?.audioGeneratedAt ?? 'none'}-${korvaVoiceVi ?? ''}`}
+                  controls
+                  className="w-full max-w-md"
+                  src={audioSrc}
+                >
+                  <track kind="captions" />
+                </audio>
+              ) : null}
+              {loc?.audioGeneratedAt ? (
+                <p className="text-xs text-zinc-600">
+                  Audio: {new Date(loc.audioGeneratedAt).toLocaleString()}
+                </p>
+              ) : null}
+            </div>
+          );
+        })}
       </CardContent>
       <CardFooter className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-800 pt-4">
         {message ? <span className="text-xs text-zinc-500">{message}</span> : <span />}

@@ -99,10 +99,12 @@ model SceneLocalization {
   sceneId   BigInt
   scene     Scene    @relation(fields: [sceneId], references: [id], onDelete: Cascade)
   locale    String
-  narration String?  @db.Text
-  subtitles String?  @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  narration         String?   @db.Text
+  subtitles         String?   @db.Text
+  audioPath         String?   @db.Text
+  audioGeneratedAt  DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@unique([sceneId, locale])
   @@index([sceneId])

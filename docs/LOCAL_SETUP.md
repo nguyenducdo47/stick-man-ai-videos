@@ -48,6 +48,25 @@ ollama pull qwen3:1.7b
 
 If the API on port 11434 accepts TCP but HTTP hangs, restart the Ollama app from the system tray.
 
+## Local TTS (Phase 4)
+
+Terminal C — Python service (default port **5001**):
+
+```powershell
+cd services\local-tts
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn main:app --host 127.0.0.1 --port 5001
+```
+
+Set `TTS_SERVICE_URL=http://127.0.0.1:5001` in the repo `.env` (see `.env.example`).
+
+- **KorvaTTS** (`korvatts` in `requirements.txt`) — default for Vietnamese; first run downloads models from Hugging Face (~vài trăm MB).
+- Optional **Piper** / **pyttsx3** fallbacks — see [docs/TTS_VIETNAMESE.md](./TTS_VIETNAMESE.md).
+
+API: `GET /v1/tts/status` · UI: **Settings → TTS**
+
 ## Environment file
 
 ```powershell

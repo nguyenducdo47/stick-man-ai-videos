@@ -10,7 +10,8 @@ Local-first AI video production studio for Windows: Ollama scripts, shared 3D st
 | 1 | PostgreSQL, project/scene CRUD, dashboard, storyboard editor, shadcn | Done — [PHASE_1_TEST_REPORT](./docs/result_testing/PHASE_1_TEST_REPORT.md) |
 | 2 | Ollama AI Director (script + storyboard), `AiGeneration` audit | Done — [PHASE_2_TEST_REPORT](./docs/result_testing/PHASE_2_TEST_REPORT.md) |
 | 3 | Stickman scene graph compile, `data/` JSON, Three.js preview | Done — [PHASE_3_TEST_REPORT](./docs/result_testing/PHASE_3_TEST_REPORT.md) |
-| 4+ | TTS, Remotion render, BullMQ worker | Planned |
+| 4 | Local TTS (`audio-engine`, Python service), narration WAV in `data/audio/` | Done — [PHASE_4_TEST_REPORT](./docs/result_testing/PHASE_4_TEST_REPORT.md) |
+| 5+ | Remotion render, BullMQ worker | Planned |
 
 ## Prerequisites
 
@@ -42,6 +43,16 @@ Terminal B — Web:
 
 ```powershell
 pnpm --filter @ai-video-studio/web dev
+```
+
+Terminal C — Local TTS (Phase 4):
+
+```powershell
+cd services\local-tts
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn main:app --host 127.0.0.1 --port 5001
 ```
 
 - Web: http://localhost:3000  

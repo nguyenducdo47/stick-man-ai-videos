@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@ai-video-studio/ai-engine": "workspace:*",
+    "@ai-video-studio/audio-engine": "workspace:*",
     "@ai-video-studio/animation-engine": "workspace:*",
     "@ai-video-studio/storage": "workspace:*",
     "@ai-video-studio/database": "workspace:*",

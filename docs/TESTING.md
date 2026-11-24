@@ -44,3 +44,16 @@ See [PHASE_1_TEST_REPORT.md](./result_testing/PHASE_1_TEST_REPORT.md), [PHASE_2_
 - [ ] UI: **3D scene graph** panel on project page — preview + scene tabs
 - [ ] **Save graph to data/** → file under `data/projects/<uuid>/scene-graph.v1.json`
 - [ ] `pnpm --filter @ai-video-studio/animation-engine test`
+
+## Phase 4 manual checklist
+
+- [ ] `services/local-tts`: `start-tts.bat` (port **5001**); `GET /health` → `engine: korva`
+- [ ] API `start:dev` on `3001`; `.env` `TTS_SERVICE_URL=http://127.0.0.1:5001`
+- [ ] `/settings/tts` — reachable, voice dropdown, **Nghe thử**, **Lưu giọng**
+- [ ] `GET /v1/tts/status` → `korvaVoiceVi` matches `data/studio/tts-preferences.v1.json`
+- [ ] Project: narration VI → **Generate TTS (vi)** → player plays new clip (cache-bust `?v=`)
+- [ ] `data/audio/projects/.../vi.wav` exists on disk
+- [ ] Phase 1–3 still OK: scene graph compile, Ollama status (no regression)
+- [ ] Optional: `POST /v1/tts/preview` returns WAV bytes
+
+See [PHASE_4_TEST_REPORT.md](./result_testing/PHASE_4_TEST_REPORT.md).

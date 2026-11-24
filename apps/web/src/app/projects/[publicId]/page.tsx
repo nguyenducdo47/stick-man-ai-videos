@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   ProjectResponse,
+  ProjectTtsBatchResponse,
   SceneListResponse,
   SceneResponse,
 } from '@ai-video-studio/validation';
@@ -36,6 +37,7 @@ export default function ProjectDetailPage() {
   const queryClient = useQueryClient();
   const [synopsis, setSynopsis] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [ttsError, setTtsError] = useState<string | null>(null);
 
   const projectQuery = useQuery({
     queryKey: ['project', publicId],
@@ -63,6 +65,23 @@ export default function ProjectDetailPage() {
       setAiError(null);
     },
     onError: (err) => setAiError(formatApiError(err)),
+  });
+
+  const generateAllTts = useMutation({
+    mutationFn: () =>
+      apiFetch<ProjectTtsBatchResponse>(`/v1/projects/${publicId}/tts`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }),
+    onSuccess: (data) => {
+      void queryClient.invalidateQueries({ queryKey: ['scenes', publicId] });
+      setTtsError(
+        data.failures.length > 0
+          ? `${data.generated} generated, ${data.failures.length} failed`
+          : null,
+      );
+    },
+    onError: (err) => setTtsError(formatApiError(err)),
   });
 
   const addScene = useMutation({
@@ -129,9 +148,23 @@ export default function ProjectDetailPage() {
           >
             Add scene
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="border-zinc-700"
+            disabled={
+              generateAllTts.isPending ||
+              generateStoryboard.isPending ||
+              (scenesQuery.data?.items.length ?? 0) === 0
+            }
+            onClick={() => generateAllTts.mutate()}
+          >
+            {generateAllTts.isPending ? 'Generating narration…' : 'Generate all TTS'}
+          </Button>
         </div>
       </div>
       {aiError ? <p className="mt-3 text-sm text-red-400">{aiError}</p> : null}
+      {ttsError ? <p className="mt-3 text-sm text-amber-400">{ttsError}</p> : null}
 
       <ul className="mt-6 space-y-6">
         {scenesQuery.data?.items.map((scene) => (

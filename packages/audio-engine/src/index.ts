@@ -1,2 +1,1 @@
-/** Phase 4 — TTS client wrappers */
-export {};
+export { TtsClient, type TtsClientConfig } from './tts-client.js';
