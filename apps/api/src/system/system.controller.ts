@@ -28,9 +28,9 @@ export class SystemController {
   getInfo() {
     return {
       name: APP_NAME,
-      phase: 5,
+      phase: 6,
       message:
-        'Remotion MP4 export per locale; TTS narration + stickman scene graph; Ollama script/storyboard.',
+        'Scene graph v2, action registry, environments, BullMQ render queue, shared stickman renderer.',
     };
   }
 

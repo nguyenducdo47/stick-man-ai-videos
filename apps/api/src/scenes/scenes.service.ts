@@ -2,8 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type {
   CreateSceneInput,
   SceneLocalizationInput,
+  SceneTimelinePatch,
+  SceneTimelineResponse,
   UpdateSceneInput,
 } from '@ai-video-studio/validation';
+import { sceneConfigSchema, sceneTimelineResponseSchema } from '@ai-video-studio/validation';
+import type { Prisma } from '@prisma/client';
 import { SUPPORTED_LOCALES } from '@ai-video-studio/shared';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -71,6 +75,17 @@ export class ScenesService {
 
   async update(scenePublicId: string, input: UpdateSceneInput) {
     await this.findSceneOrThrow(scenePublicId);
+    const existing = await this.findSceneOrThrow(scenePublicId);
+    let config: Prisma.InputJsonValue | undefined;
+    if (input.config !== undefined) {
+      const prev = sceneConfigSchema.safeParse(existing.config ?? {});
+      const merged = {
+        ...(prev.success ? prev.data : {}),
+        ...input.config,
+      };
+      config = sceneConfigSchema.parse(merged) as Prisma.InputJsonValue;
+    }
+
     const scene = await this.prisma.client.scene.update({
       where: { publicId: scenePublicId },
       data: {
@@ -81,10 +96,43 @@ export class ScenesService {
         cameraPreset: input.cameraPreset,
         durationSec: input.durationSec,
         sortOrder: input.sortOrder,
+        ...(config !== undefined ? { config } : {}),
       },
       include: { localizations: true },
     });
     return toSceneResponse(scene);
+  }
+
+  async getTimeline(scenePublicId: string): Promise<SceneTimelineResponse> {
+    const scene = await this.findSceneOrThrow(scenePublicId);
+    const parsed = sceneConfigSchema.safeParse(scene.config ?? {});
+    return sceneTimelineResponseSchema.parse({
+      scenePublicId,
+      durationSec: scene.durationSec,
+      config: parsed.success ? parsed.data : {},
+    });
+  }
+
+  async patchTimeline(
+    scenePublicId: string,
+    patch: SceneTimelinePatch,
+  ): Promise<SceneTimelineResponse> {
+    const scene = await this.findSceneOrThrow(scenePublicId);
+    const prev = sceneConfigSchema.safeParse(scene.config ?? {});
+    const merged = {
+      ...(prev.success ? prev.data : {}),
+      ...patch,
+    };
+    const config = sceneConfigSchema.parse(merged);
+    await this.prisma.client.scene.update({
+      where: { id: scene.id },
+      data: { config: config as Prisma.InputJsonValue },
+    });
+    return sceneTimelineResponseSchema.parse({
+      scenePublicId,
+      durationSec: scene.durationSec,
+      config,
+    });
   }
 
   async remove(scenePublicId: string) {

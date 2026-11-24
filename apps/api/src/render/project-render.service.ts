@@ -19,14 +19,21 @@ import {
   readWavDurationSec,
   renderProjectVideo,
   remotionEntryPath,
+  validateRenderedMp4,
 } from '@ai-video-studio/video-engine';
 import {
+  environmentGlbFile,
+  environmentGlbPublicPath,
+  stickmanHeroGlbPublicPath,
   projectRenderVideoFile,
   projectRenderVideoRelPath,
   sceneNarrationAudioFile,
+  stickmanHeroGlbFile,
   resolveDataRoot,
 } from '@ai-video-studio/storage';
+import type { EnvironmentId } from '@ai-video-studio/validation';
 import { SUPPORTED_LOCALES } from '@ai-video-studio/shared';
+import { freemem } from 'node:os';
 import { access } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import { join } from 'node:path';
@@ -104,7 +111,22 @@ export class ProjectRenderService {
     body: ProjectRenderRequest,
   ): Promise<ProjectRenderResponse> {
     return this.runExclusive(() =>
-      this.renderProjectLocaleInner(projectPublicId, body.locale),
+      this.renderProjectLocaleInner(
+        projectPublicId,
+        body.locale,
+        body.quality ?? 'standard',
+      ),
+    );
+  }
+
+  /** Used by BullMQ worker — same pipeline without HTTP wrapper. */
+  async renderProjectLocaleForWorker(
+    projectPublicId: string,
+    locale: (typeof SUPPORTED_LOCALES)[number],
+    quality: 'preview' | 'standard' | 'high' | 'hq' = 'standard',
+  ): Promise<ProjectRenderResponse> {
+    return this.runExclusive(() =>
+      this.renderProjectLocaleInner(projectPublicId, locale, quality),
     );
   }
 
@@ -137,10 +159,42 @@ export class ProjectRenderService {
     createReadStream(abs).pipe(res);
   }
 
+  /** Static path under `data/assets` for Remotion `publicDir` (preferred in headless render). */
+  private async heroGlbRemotionPath(): Promise<string | null> {
+    const file = stickmanHeroGlbFile(this.storageRoot());
+    try {
+      await access(file);
+      return stickmanHeroGlbPublicPath();
+    } catch {
+      return null;
+    }
+  }
+
+  private async environmentGlbRemotionPath(
+    environmentId: EnvironmentId,
+  ): Promise<string | null> {
+    if (environmentId === 'studio_grid') return null;
+    const file = environmentGlbFile(this.storageRoot(), environmentId);
+    try {
+      await access(file);
+      return environmentGlbPublicPath(environmentId);
+    } catch {
+      return null;
+    }
+  }
+
   private async renderProjectLocaleInner(
     projectPublicId: string,
     locale: (typeof SUPPORTED_LOCALES)[number],
+    quality: 'preview' | 'standard' | 'high' | 'hq' = 'standard',
   ): Promise<ProjectRenderResponse> {
+    const minFreeMb = Number(this.config.get<string>('RENDER_MIN_FREE_MB') ?? '1500');
+    if (freemem() / (1024 * 1024) < minFreeMb) {
+      throw new BadRequestException(
+        `Low memory (${Math.round(freemem() / (1024 * 1024))}MB free). Need ~${minFreeMb}MB for Remotion render.`,
+      );
+    }
+
     const ffmpegPath = this.config.get<string>('FFMPEG_PATH') ?? null;
     const probe = await probeFfmpeg(ffmpegPath);
     if (!probe.available) {
@@ -159,10 +213,12 @@ export class ProjectRenderService {
       throw new BadRequestException('Project has no scenes to render');
     }
 
-    const compiled = await this.sceneGraph.compile(projectPublicId, false);
+    const compiledV2 = await this.sceneGraph.compileV2(projectPublicId, false);
     const graphById = new Map(
-      compiled.graph.scenes.map((s) => [s.scenePublicId, s]),
+      compiledV2.graph.scenes.map((s) => [s.scenePublicId, s]),
     );
+    const heroGlb = await this.heroGlbRemotionPath();
+    const envGlbCache = new Map<string, string | null>();
 
     const clips: Parameters<typeof renderProjectVideo>[0]['scenes'] = [];
     const missing: string[] = [];
@@ -194,6 +250,11 @@ export class ProjectRenderService {
       }
       const wavSec = readWavDurationSec(wavPath);
       const durationSec = Math.max(gScene.durationSec, wavSec, 0.5);
+      let envGlb = envGlbCache.get(gScene.environmentId);
+      if (envGlb === undefined) {
+        envGlb = await this.environmentGlbRemotionPath(gScene.environmentId);
+        envGlbCache.set(gScene.environmentId, envGlb);
+      }
       clips.push({
         scenePublicId: scene.publicId,
         sortOrder: scene.sortOrder,
@@ -202,7 +263,14 @@ export class ProjectRenderService {
         audioSrc: this.sceneAudioUrl(scene.publicId, locale),
         animationPreset: gScene.animationPreset,
         cameraPreset: gScene.cameraPreset,
-        characterColors: compiled.graph.character.colors,
+        characterColors: compiledV2.graph.character.colors,
+        environmentId: gScene.environmentId,
+        actionClips: gScene.actionClips,
+        interactions: gScene.interactions,
+        cameraKeyframes: gScene.cameraKeyframes,
+        subtitleText: loc.subtitles ?? loc.narration?.slice(0, 280) ?? null,
+        heroGlbSrc: heroGlb,
+        environmentGlbSrc: envGlb,
       });
     }
 
@@ -224,14 +292,26 @@ export class ProjectRenderService {
     let durationSec: number | null = null;
 
     try {
+      const assetsDir = join(root, 'assets');
       const result = await renderProjectVideo({
         projectTitle: project.title,
         outputFilePath: abs,
         scenes: clips,
         ffmpegPath: probe.path,
         bundleCacheDir,
+        assetsPublicDir: assetsDir,
+        quality,
       });
       durationSec = result.durationSec;
+      const validation = await validateRenderedMp4(
+        abs,
+        probe.path!,
+        result.durationSec,
+      );
+      if (!validation.ok) {
+        status = 'FAILED';
+        errorMessage = validation.warnings.join(' ');
+      }
     } catch (err) {
       status = 'FAILED';
       errorMessage = err instanceof Error ? err.message : 'Render failed';

@@ -4,9 +4,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   ProjectRenderListResponse,
   ProjectRenderResponse,
+  RenderJobResponse,
   RenderStatusResponse,
 } from '@ai-video-studio/validation';
-import { useState } from 'react';
+import { RENDER_QUALITY_MODES } from '@ai-video-studio/validation';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { apiAssetUrlVersioned, apiFetch, ApiError } from '@/lib/api';
@@ -15,6 +17,8 @@ type Props = {
   projectPublicId: string;
   languages: string[];
 };
+
+type RenderQuality = (typeof RENDER_QUALITY_MODES)[number];
 
 function formatApiError(err: unknown): string {
   if (err instanceof ApiError) {
@@ -26,10 +30,30 @@ function formatApiError(err: unknown): string {
   return err instanceof Error ? err.message : 'Request failed';
 }
 
+function isRenderJob(
+  body: ProjectRenderResponse | RenderJobResponse,
+): body is RenderJobResponse {
+  return 'jobId' in body && typeof body.jobId === 'string';
+}
+
 export function ProjectExportPanel({ projectPublicId, languages }: Props) {
   const queryClient = useQueryClient();
   const [renderError, setRenderError] = useState<string | null>(null);
   const [activeLocale, setActiveLocale] = useState<string | null>(null);
+  const [asyncRender, setAsyncRender] = useState(true);
+  const [quality, setQuality] = useState<RenderQuality>('standard');
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<RenderJobResponse | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const clearPoll = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  };
+
+  useEffect(() => () => clearPoll(), []);
 
   const statusQuery = useQuery({
     queryKey: ['render-status'],
@@ -45,34 +69,85 @@ export function ProjectExportPanel({ projectPublicId, languages }: Props) {
     enabled: Boolean(projectPublicId),
   });
 
+  const pollJob = (id: string) => {
+    clearPoll();
+    pollRef.current = setInterval(() => {
+      void (async () => {
+        try {
+          const job = await apiFetch<RenderJobResponse>(
+            `/v1/render/jobs/${encodeURIComponent(id)}`,
+          );
+          setJobStatus(job);
+          if (job.status === 'completed' || job.status === 'failed') {
+            clearPoll();
+            setJobId(null);
+            setActiveLocale(null);
+            void queryClient.invalidateQueries({
+              queryKey: ['project-renders', projectPublicId],
+            });
+            if (job.status === 'failed' && job.errorMessage) {
+              setRenderError(job.errorMessage);
+            }
+          }
+        } catch (err) {
+          clearPoll();
+          setRenderError(formatApiError(err));
+          setActiveLocale(null);
+        }
+      })();
+    }, 1500);
+  };
+
   const renderLocale = useMutation({
     mutationFn: (locale: string) => {
       setActiveLocale(locale);
-      return apiFetch<ProjectRenderResponse>(
+      setRenderError(null);
+      setJobStatus(null);
+      void queryClient.invalidateQueries({
+        queryKey: ['project-renders', projectPublicId],
+      });
+      return apiFetch<ProjectRenderResponse | RenderJobResponse>(
         `/v1/projects/${projectPublicId}/render`,
         {
           method: 'POST',
-          body: JSON.stringify({ locale }),
+          body: JSON.stringify({
+            locale,
+            async: asyncRender,
+            quality,
+          }),
         },
       );
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (isRenderJob(data)) {
+        setJobId(data.jobId);
+        setJobStatus(data);
+        pollJob(data.jobId);
+        return;
+      }
       setRenderError(null);
       void queryClient.invalidateQueries({
         queryKey: ['project-renders', projectPublicId],
       });
+      setActiveLocale(null);
     },
     onError: (err) => {
       setRenderError(formatApiError(err));
       void queryClient.invalidateQueries({
         queryKey: ['project-renders', projectPublicId],
       });
+      setActiveLocale(null);
     },
-    onSettled: () => setActiveLocale(null),
   });
 
   const ffmpegOk = statusQuery.data?.ffmpegAvailable === true;
   const items = rendersQuery.data?.items ?? [];
+  const rendering =
+    renderLocale.isPending ||
+    (jobId != null &&
+      jobStatus != null &&
+      jobStatus.status !== 'completed' &&
+      jobStatus.status !== 'failed');
 
   return (
     <section className="mt-10 rounded-xl border border-zinc-800 bg-zinc-950/40 p-6">
@@ -99,6 +174,37 @@ export function ProjectExportPanel({ projectPublicId, languages }: Props) {
         <p className="mt-3 text-sm text-amber-400">{statusQuery.data.error}</p>
       ) : null}
 
+      <p className="mt-2 text-xs text-zinc-600">
+        Nếu render báo EPERM trên Windows: đóng tab preview video (player đang giữ file{' '}
+        <code className="text-zinc-500">.mp4</code>) rồi thử lại.
+      </p>
+
+      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+        <label className="flex cursor-pointer items-center gap-2 text-zinc-400">
+          <input
+            type="checkbox"
+            className="rounded border-zinc-600"
+            checked={asyncRender}
+            onChange={(e) => setAsyncRender(e.target.checked)}
+          />
+          Queue via Redis (worker)
+        </label>
+        <label className="flex items-center gap-2 text-zinc-400">
+          Quality
+          <select
+            className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-zinc-200"
+            value={quality}
+            onChange={(e) => setQuality(e.target.value as RenderQuality)}
+          >
+            {RENDER_QUALITY_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <div className="mt-4 flex flex-wrap gap-2">
         {languages.map((locale) => (
           <Button
@@ -106,19 +212,32 @@ export function ProjectExportPanel({ projectPublicId, languages }: Props) {
             type="button"
             variant="outline"
             className="border-zinc-700"
-            disabled={
-              !ffmpegOk ||
-              renderLocale.isPending ||
-              statusQuery.isLoading
-            }
+            disabled={!ffmpegOk || rendering || statusQuery.isLoading}
             onClick={() => renderLocale.mutate(locale)}
           >
-            {renderLocale.isPending && activeLocale === locale
-              ? `Rendering ${locale.toUpperCase()}…`
+            {rendering && activeLocale === locale
+              ? asyncRender && jobStatus
+                ? `Queue ${locale.toUpperCase()}… ${jobStatus.progress ?? 0}%`
+                : `Rendering ${locale.toUpperCase()}…`
               : `Render ${locale.toUpperCase()} MP4`}
           </Button>
         ))}
       </div>
+
+      {asyncRender ? (
+        <p className="mt-2 text-xs text-zinc-600">
+          Bật Redis (Laragon) và chạy{' '}
+          <code className="text-zinc-500">pnpm --filter @ai-video-studio/worker dev</code>{' '}
+          trong terminal riêng.
+        </p>
+      ) : null}
+
+      {jobStatus && jobId ? (
+        <p className="mt-3 text-sm text-zinc-400">
+          Job {jobId.slice(0, 24)}… — {jobStatus.status}
+          {jobStatus.progress != null ? ` (${jobStatus.progress}%)` : null}
+        </p>
+      ) : null}
 
       {renderError ? (
         <p className="mt-3 text-sm text-red-400">{renderError}</p>

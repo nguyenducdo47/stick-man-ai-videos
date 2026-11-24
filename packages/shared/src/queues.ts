@@ -1,0 +1,1 @@
+export const RENDER_QUEUE_NAME = 'ai-video-studio-render';

@@ -1,20 +1,22 @@
 'use client';
 
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
-import type { SceneGraphDocument } from '@ai-video-studio/validation';
-import { CAMERA_PRESETS } from '@ai-video-studio/animation-engine';
+import { ENVIRONMENT_PRESETS } from '@ai-video-studio/animation-engine';
+import { PreviewStickmanCanvas } from '@ai-video-studio/stickman-renderer';
+import type { SceneGraphV2Document } from '@ai-video-studio/validation';
+import { useState } from 'react';
 
-import { StickmanFigure } from '@/components/stickman-figure';
+import { environmentGlbAssetUrl, heroGlbAssetUrl } from '@/lib/studio-assets';
 
 export function SceneGraphCanvas({
   graph,
   sceneIndex,
 }: {
-  graph: SceneGraphDocument;
+  graph: SceneGraphV2Document;
   sceneIndex: number;
 }) {
   const scene = graph.scenes[sceneIndex] ?? graph.scenes[0];
+  const [scrubSec, setScrubSec] = useState(0);
+
   if (!scene) {
     return (
       <div className="flex h-64 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 text-sm text-zinc-500">
@@ -23,32 +25,37 @@ export function SceneGraphCanvas({
     );
   }
 
-  const cam =
-    CAMERA_PRESETS[scene.cameraPreset as keyof typeof CAMERA_PRESETS] ??
-    CAMERA_PRESETS['wide-shot'];
+  const envLabel = ENVIRONMENT_PRESETS[scene.environmentId]?.label ?? scene.environmentId;
 
   return (
     <div>
       <h3 className="sr-only">3D preview scene {sceneIndex + 1}</h3>
-      <div className="h-72 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950">
-        <Canvas shadows>
-          <color attach="background" args={['#09090b']} />
-          <ambientLight intensity={0.55} />
-          <directionalLight position={[4, 8, 4]} intensity={1.1} />
-          <PerspectiveCamera
-            makeDefault
-            position={cam.position}
-            fov={cam.fov}
-            onUpdate={(self) => self.lookAt(...cam.target)}
-          />
-          <gridHelper args={[12, 12, '#27272a', '#18181b']} position={[0, 0, 0]} />
-          <StickmanFigure animationPreset={scene.animationPreset} />
-          <OrbitControls target={cam.target} enablePan={false} />
-        </Canvas>
-      </div>
+      <PreviewStickmanCanvas
+        environmentId={scene.environmentId}
+        cameraPreset={scene.cameraPreset}
+        colors={graph.character.colors}
+        actionClips={scene.actionClips}
+        interactions={scene.interactions}
+        cameraKeyframes={scene.cameraKeyframes}
+        heroGlbUrl={heroGlbAssetUrl()}
+        environmentGlbUrl={environmentGlbAssetUrl(scene.environmentId)}
+        previewTimeSec={scrubSec}
+      />
+      <label className="mt-3 flex items-center gap-3 text-xs text-zinc-400">
+        Scrub {scrubSec.toFixed(1)}s / {scene.durationSec}s
+        <input
+          type="range"
+          min={0}
+          max={scene.durationSec}
+          step={0.05}
+          value={scrubSec}
+          className="flex-1"
+          onChange={(e) => setScrubSec(Number(e.target.value))}
+        />
+      </label>
       <p className="mt-2 text-xs text-zinc-500">
-        {scene.title ?? `Scene ${scene.sortOrder + 1}`} · {scene.animationPreset} ·{' '}
-        {scene.cameraPreset} · {scene.durationSec}s
+        {scene.title ?? `Scene ${scene.sortOrder + 1}`} · {scene.actionClips.length} clip(s) ·{' '}
+        {scene.cameraPreset} · {envLabel}
       </p>
     </div>
   );

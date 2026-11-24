@@ -122,6 +122,15 @@ describe('Projects (e2e)', () => {
     expect(res.body.graph.scenes.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('GET /v1/projects/:id/scene-graph-v2 exposes v2 graph', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/v1/projects/${createdPublicId}/scene-graph-v2`)
+      .expect(200);
+    expect(res.body.graph.version).toBe(2);
+    expect(res.body.graph.scenes[0]?.environmentId).toBeDefined();
+    expect(Array.isArray(res.body.graph.scenes[0]?.actionClips)).toBe(true);
+  });
+
   it('POST /v1/projects/:id/ai/storyboard without script returns 400', async () => {
     const fresh = await request(app.getHttpServer())
       .post('/v1/projects')

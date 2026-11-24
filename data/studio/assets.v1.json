@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "stickman-hero-glb",
+      "kind": "character",
+      "path": "assets/characters/stickman-hero.glb",
+      "license": "user-provided-cc0",
+      "polyCountEstimate": null,
+      "notes": "Quaternius / Kenney / Mixamo. Procedural fallback when missing."
+    },
+    {
+      "id": "env-living-room",
+      "kind": "environment",
+      "environmentId": "living_room",
+      "path": "assets/environments/living_room.glb",
+      "license": "user-provided-cc0",
+      "polyCountEstimate": null,
+      "notes": "Interior diorama — procedural fallback when missing."
+    },
+    {
+      "id": "env-street",
+      "kind": "environment",
+      "environmentId": "street",
+      "path": "assets/environments/street.glb",
+      "license": "user-provided-cc0",
+      "polyCountEstimate": null,
+      "notes": "Suburban/city GLB"
+    },
+    {
+      "id": "env-park",
+      "kind": "environment",
+      "environmentId": "park",
+      "path": "assets/environments/park.glb",
+      "license": "user-provided-cc0",
+      "polyCountEstimate": null,
+      "notes": "Nature / park GLB"
+    },
+    {
+      "id": "env-office",
+      "kind": "environment",
+      "environmentId": "office",
+      "path": "assets/environments/office.glb",
+      "license": "user-provided-cc0",
+      "polyCountEstimate": null,
+      "notes": "Office interior GLB"
+    },
+    {
+      "id": "env-studio-grid",
+      "kind": "environment",
+      "environmentId": "studio_grid",
+      "path": null,
+      "license": "procedural",
+      "polyCountEstimate": 200,
+      "notes": "Built-in R3F grid"
+    }
+  ]
+}

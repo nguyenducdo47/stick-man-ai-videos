@@ -171,6 +171,7 @@ export class ProjectAiService {
               animationPreset: s.animationPreset,
               cameraPreset: s.cameraPreset,
               durationSec: s.durationSec,
+              config: { environmentId: s.environmentId },
               localizations: {
                 create: langs.map((locale) => ({
                   locale,

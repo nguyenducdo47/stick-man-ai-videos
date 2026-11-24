@@ -1,0 +1,14 @@
+{
+  "installedAt": "2026-11-24T09:37:24.354Z",
+  "mode": "smoke-test",
+  "source": "Khronos glTF-Sample-Models (NOT production art)",
+  "heroBytes": 463988,
+  "envBytes": 4133072,
+  "entries": [
+    "stickman-hero",
+    "living_room",
+    "street",
+    "park",
+    "office"
+  ]
+}

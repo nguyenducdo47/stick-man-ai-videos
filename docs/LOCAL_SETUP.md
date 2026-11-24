@@ -74,3 +74,25 @@ Copy-Item .env.example .env
 ```
 
 Prisma commands (`pnpm db:push`, `pnpm db:migrate`, `pnpm db:generate`) load **`DATABASE_URL` from the repo root `.env`** via `packages/database` — you do not need a separate `.env` inside `packages/database`.
+
+Set `REDIS_HOST` / `REDIS_PORT` and optional `API_PUBLIC_URL` (same host/port as API for worker HTTP callbacks) in `.env`.
+
+## Dev servers
+
+From repo root after `pnpm install` and `pnpm build`:
+
+| Terminal | Command |
+|----------|---------|
+| API | `pnpm --filter @ai-video-studio/api dev` |
+| Web | `pnpm --filter @ai-video-studio/web dev` |
+| Worker (Phase 6.7) | `pnpm --filter @ai-video-studio/worker dev` |
+
+Bật **Redis** trong Laragon trước khi dùng render async (checkbox “Queue via Redis” trên trang project).
+
+## Hero GLB (optional)
+
+Đặt model có license tại `data/assets/characters/stickman-hero.glb` (xem `data/assets/characters/README.md`). Không tự động tải model. API phục vụ file qua `GET /v1/assets/stickman-hero.glb`.
+
+## FFmpeg
+
+Đặt `FFMPEG_PATH` trong `.env` (ví dụ build Laragon) hoặc để trống — API dùng ffmpeg đi kèm Remotion khi tìm thấy.

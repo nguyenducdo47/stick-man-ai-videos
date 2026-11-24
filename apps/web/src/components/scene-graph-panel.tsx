@@ -1,6 +1,6 @@
 'use client';
 
-import type { SceneGraphResponse } from '@ai-video-studio/validation';
+import type { SceneGraphV2Response } from '@ai-video-studio/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
@@ -8,6 +8,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ApiError, apiFetch } from '@/lib/api';
+
+import { SceneTimelineEditor } from '@/components/scene-timeline-editor';
 
 const SceneGraphCanvas = dynamic(
   () => import('./scene-graph-canvas').then((m) => m.SceneGraphCanvas),
@@ -34,14 +36,14 @@ export function SceneGraphPanel({ projectPublicId }: { projectPublicId: string }
   const graphQuery = useQuery({
     queryKey: ['scene-graph', projectPublicId],
     queryFn: () =>
-      apiFetch<SceneGraphResponse>(`/v1/projects/${projectPublicId}/scene-graph`),
+      apiFetch<SceneGraphV2Response>(`/v1/projects/${projectPublicId}/scene-graph-v2`),
     enabled: Boolean(projectPublicId),
   });
 
   const saveGraph = useMutation({
     mutationFn: () =>
-      apiFetch<SceneGraphResponse>(
-        `/v1/projects/${projectPublicId}/scene-graph/compile`,
+      apiFetch<SceneGraphV2Response>(
+        `/v1/projects/${projectPublicId}/scene-graph-v2/compile`,
         { method: 'POST', body: '{}' },
       ),
     onSuccess: (data) => {
@@ -57,7 +59,7 @@ export function SceneGraphPanel({ projectPublicId }: { projectPublicId: string }
   return (
     <Card className="mb-8 border-zinc-800 bg-zinc-900/40">
       <CardHeader>
-        <CardTitle className="text-base">3D scene graph (Phase 3)</CardTitle>
+        <CardTitle className="text-base">3D scene graph v2</CardTitle>
         <p className="text-xs text-zinc-500">
           Compiles storyboard scenes into a shared stickman timeline (data under{' '}
           <code className="text-zinc-400">data/projects/</code>). Preview uses Three.js locally.
@@ -87,6 +89,15 @@ export function SceneGraphPanel({ projectPublicId }: { projectPublicId: string }
               ))}
             </div>
             <SceneGraphCanvas graph={graph} sceneIndex={sceneIndex} />
+            <SceneTimelineEditor
+              scenePublicId={graph.scenes[sceneIndex]!.scenePublicId}
+              durationSec={graph.scenes[sceneIndex]!.durationSec}
+              onSaved={() => {
+                void queryClient.invalidateQueries({
+                  queryKey: ['scene-graph', projectPublicId],
+                });
+              }}
+            />
             <p className="text-xs text-zinc-500">
               Total ~{graph.totalDurationSec}s · style {graph.visualStyle}
               {graphQuery.data?.savedPath

@@ -1,0 +1,130 @@
+import {
+  Injectable,
+  OnModuleDestroy,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import {
+  renderJobResponseSchema,
+  type RenderJobResponse,
+} from '@ai-video-studio/validation';
+import { RENDER_QUEUE_NAME, SUPPORTED_LOCALES } from '@ai-video-studio/shared';
+import { Queue } from 'bullmq';
+import IORedis from 'ioredis';
+
+@Injectable()
+export class RenderQueueService implements OnModuleDestroy {
+  private connection: IORedis | null = null;
+  private queue: Queue | null = null;
+
+  constructor(private readonly config: ConfigService) {}
+
+  private redisConnection(): IORedis {
+    if (!this.connection) {
+      const host = this.config.get<string>('REDIS_HOST') ?? '127.0.0.1';
+      const port = Number(this.config.get<string>('REDIS_PORT') ?? '6379');
+      this.connection = new IORedis({
+        host,
+        port,
+        maxRetriesPerRequest: null,
+      });
+    }
+    return this.connection;
+  }
+
+  private renderQueue(): Queue {
+    if (!this.queue) {
+      this.queue = new Queue(RENDER_QUEUE_NAME, {
+        connection: this.redisConnection(),
+        defaultJobOptions: {
+          removeOnComplete: 50,
+          removeOnFail: 100,
+          attempts: 1,
+        },
+      });
+    }
+    return this.queue;
+  }
+
+  async enqueue(
+    projectPublicId: string,
+    locale: (typeof SUPPORTED_LOCALES)[number],
+    quality: 'preview' | 'standard' | 'high' | 'hq' = 'standard',
+  ): Promise<RenderJobResponse> {
+    try {
+      const job = await this.renderQueue().add(
+        'render-locale',
+        { projectPublicId, locale, quality },
+        { jobId: `${projectPublicId}:${locale}:${Date.now()}` },
+      );
+      const body = {
+        jobId: String(job.id),
+        status: 'queued' as const,
+        projectPublicId,
+        locale,
+        progress: 0,
+        errorMessage: null,
+      };
+      return renderJobResponseSchema.parse(body);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Redis unavailable';
+      throw new ServiceUnavailableException(
+        `Render queue unavailable. Start Redis (Laragon) and worker. ${message}`,
+      );
+    }
+  }
+
+  async getJob(jobId: string): Promise<RenderJobResponse> {
+    const job = await this.renderQueue().getJob(jobId);
+    if (!job) {
+      throw new ServiceUnavailableException(`Unknown render job ${jobId}`);
+    }
+    const data = job.data as {
+      projectPublicId: string;
+      locale: (typeof SUPPORTED_LOCALES)[number];
+    };
+    const state = await job.getState();
+    const status =
+      state === 'completed'
+        ? 'completed'
+        : state === 'failed'
+          ? 'failed'
+          : state === 'active'
+            ? 'active'
+            : 'queued';
+    const progress =
+      typeof job.progress === 'number'
+        ? job.progress
+        : Number(job.progress) || 0;
+    const failedReason =
+      status === 'failed' ? job.failedReason ?? 'Render failed' : null;
+
+    return renderJobResponseSchema.parse({
+      jobId: String(job.id),
+      status,
+      projectPublicId: data.projectPublicId,
+      locale: data.locale,
+      progress,
+      errorMessage: failedReason,
+    });
+  }
+
+  async cancelJob(jobId: string): Promise<{ cancelled: boolean; jobId: string }> {
+    const job = await this.renderQueue().getJob(jobId);
+    if (!job) {
+      throw new ServiceUnavailableException(`Unknown render job ${jobId}`);
+    }
+  if ((await job.getState()) === 'active') {
+      throw new ServiceUnavailableException(
+        'Cannot cancel an active render job yet — wait for completion.',
+      );
+    }
+    await job.remove();
+    return { cancelled: true, jobId };
+  }
+
+  async onModuleDestroy() {
+    await this.queue?.close();
+    await this.connection?.quit();
+  }
+}

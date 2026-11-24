@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ai-video-studio/animation-engine": "workspace:*",
+    "@ai-video-studio/stickman-renderer": "workspace:*",
     "@ai-video-studio/shared": "workspace:*",
     "@ai-video-studio/validation": "workspace:*",
     "@react-three/drei": "^10.0.6",

@@ -2,6 +2,13 @@ import { z } from 'zod';
 
 import { SUPPORTED_LOCALES } from '@ai-video-studio/shared';
 
+import { actionClipSchema } from './scene-graph-v2.js';
+import { environmentIdSchema } from './environments.js';
+import {
+  cameraKeyframeSchema,
+  interactionSchema,
+} from './scene-timeline.js';
+
 const localeSchema = z.enum(SUPPORTED_LOCALES);
 
 export const renderClipSchema = z.object({
@@ -18,12 +25,38 @@ export const renderClipSchema = z.object({
     hoodie: z.string(),
     shoes: z.string(),
   }),
+  environmentId: environmentIdSchema,
+  actionClips: z.array(actionClipSchema).min(1),
+  interactions: z.array(interactionSchema).max(16).optional(),
+  cameraKeyframes: z.array(cameraKeyframeSchema).min(1).max(24).optional(),
+  subtitleText: z.string().nullable().optional(),
+  /** HTTP URL (web preview) or Remotion `staticFile` path e.g. `environments/park.glb`. */
+  heroGlbSrc: z
+    .string()
+    .min(1)
+    .refine((s) => s.startsWith('http') || /^[\w./-]+\.glb$/i.test(s), {
+      message: 'Must be http(s) URL or relative .glb path',
+    })
+    .nullable()
+    .optional(),
+  environmentGlbSrc: z
+    .string()
+    .min(1)
+    .refine((s) => s.startsWith('http') || /^[\w./-]+\.glb$/i.test(s), {
+      message: 'Must be http(s) URL or relative .glb path',
+    })
+    .nullable()
+    .optional(),
 });
 
 export type RenderClip = z.infer<typeof renderClipSchema>;
 
+export const RENDER_QUALITY_MODES = ['preview', 'standard', 'high', 'hq'] as const;
+
 export const projectRenderRequestSchema = z.object({
   locale: localeSchema,
+  async: z.boolean().optional(),
+  quality: z.enum(RENDER_QUALITY_MODES).optional(),
 });
 
 export type ProjectRenderRequest = z.infer<typeof projectRenderRequestSchema>;
@@ -72,3 +105,14 @@ export const renderStatusResponseSchema = z.object({
 });
 
 export type RenderStatusResponse = z.infer<typeof renderStatusResponseSchema>;
+
+export const renderJobResponseSchema = z.object({
+  jobId: z.string(),
+  status: z.enum(['queued', 'active', 'completed', 'failed']),
+  projectPublicId: z.string().uuid(),
+  locale: localeSchema,
+  progress: z.number().min(0).max(100).optional(),
+  errorMessage: z.string().nullable().optional(),
+});
+
+export type RenderJobResponse = z.infer<typeof renderJobResponseSchema>;

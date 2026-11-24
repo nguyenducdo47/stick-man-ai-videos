@@ -1,3 +1,10 @@
+import type {
+  ActionClip,
+  CameraKeyframe,
+  EnvironmentId,
+  Interaction,
+} from '@ai-video-studio/validation';
+
 export type StickmanColors = {
   body: string;
   hoodie: string;
@@ -13,6 +20,13 @@ export type RemotionSceneClip = {
   animationPreset: string;
   cameraPreset: string;
   characterColors: StickmanColors;
+  environmentId: EnvironmentId;
+  actionClips: ActionClip[];
+  interactions?: Interaction[];
+  cameraKeyframes?: CameraKeyframe[];
+  subtitleText?: string | null;
+  heroGlbSrc?: string | null;
+  environmentGlbSrc?: string | null;
 };
 
 export type RemotionProjectVideoProps = {

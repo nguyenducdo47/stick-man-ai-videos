@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "notes": "Clip names inside hero GLB. Sync values to packages/animation-engine/src/gltf-action-map.ts.",
+  "clips": {
+    "idle": "Idle",
+    "walk": "Walking",
+    "run": "Running",
+    "sit": "Sitting",
+    "wave": "Waving",
+    "talk": "Talking",
+    "point": "Pointing",
+    "jump": "Jumping",
+    "stand_up": "Stand Up",
+    "celebrate": "Cheering"
+  }
+}

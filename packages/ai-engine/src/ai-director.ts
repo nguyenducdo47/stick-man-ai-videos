@@ -96,7 +96,9 @@ ${scriptDraft.slice(0, 12_000)}
 Create exactly ${sceneTarget} scenes (or fewer only if script is very short).
 For each scene provide shared visual fields plus separate Vietnamese and English narration.
 
-Use simple animationPreset and cameraPreset ids like: idle, walk, point, zoom-in, wide-shot.
+Use ONLY these animationPreset (action) ids: idle, walk, run, jump, sit, wave, point, talk, explain, think, look_around, celebrate.
+Use ONLY cameraPreset ids: wide-shot, medium-shot, close-up, zoom-in, tracking.
+Use ONLY environmentId: studio_grid, living_room, street, park, office.
 
 JSON only:
 {
@@ -107,6 +109,7 @@ JSON only:
       "characterAction": "what stickman does",
       "animationPreset": "idle",
       "cameraPreset": "wide-shot",
+      "environmentId": "studio_grid",
       "durationSec": 8,
       "narrationVi": "Vietnamese narration",
       "narrationEn": "English narration"
@@ -114,13 +117,20 @@ JSON only:
   ]
 }`;
 
-    return generateStructuredOutput(this.llm, aiStoryboardOutputSchema, prompt, {
-      model: options?.model,
-      temperature: options?.temperature ?? 0.5,
-      system: 'You output strict JSON for a local video studio pipeline. No markdown.',
-      jsonMode: true,
-      maxAttempts: 2,
-      numPredict: 6_144,
-    });
+    const raw = await generateStructuredOutput(
+      this.llm,
+      aiStoryboardOutputSchema,
+      prompt,
+      {
+        model: options?.model,
+        temperature: options?.temperature ?? 0.5,
+        system:
+          'You output strict JSON for a local video studio pipeline. No markdown.',
+        jsonMode: true,
+        maxAttempts: 2,
+        numPredict: 6_144,
+      },
+    );
+    return aiStoryboardOutputSchema.parse(raw);
   }
 }

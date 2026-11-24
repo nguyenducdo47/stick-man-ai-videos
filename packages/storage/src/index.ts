@@ -7,6 +7,13 @@ export function resolveStoragePath(root: string, ...segments: string[]): string 
 export {
   projectDataDir,
   projectSceneGraphFile,
+  projectSceneGraphV2File,
+  stickmanHeroGlbRelPath,
+  stickmanHeroGlbFile,
+  environmentGlbRelPath,
+  environmentGlbFile,
+  environmentGlbPublicPath,
+  stickmanHeroGlbPublicPath,
   sceneNarrationAudioFile,
   sceneNarrationAudioRelPath,
   projectRenderVideoRelPath,

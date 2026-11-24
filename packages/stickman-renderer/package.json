@@ -1,0 +1,33 @@
+{
+  "name": "@ai-video-studio/stickman-renderer",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-video-studio/animation-engine": "workspace:*",
+    "@ai-video-studio/validation": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1 || ^19.0.0",
+    "react-dom": "^18.3.1 || ^19.0.0",
+    "@react-three/fiber": "^8.17.0 || ^9.0.0",
+    "@react-three/drei": "^9.117.0 || ^10.0.0",
+    "three": ">=0.169.0"
+  },
+  "devDependencies": {
+    "@react-three/drei": "^10.0.6",
+    "@react-three/fiber": "^9.1.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "0.172.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.172.0",
+    "typescript": "^5.7.2"
+  }
+}

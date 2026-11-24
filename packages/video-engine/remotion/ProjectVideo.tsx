@@ -25,6 +25,13 @@ export const ProjectVideo: React.FC<RemotionProjectVideoProps> = ({
                   animationPreset={scene.animationPreset}
                   cameraPreset={scene.cameraPreset}
                   characterColors={scene.characterColors}
+                  environmentId={scene.environmentId}
+                  actionClips={scene.actionClips}
+                  interactions={scene.interactions}
+                  cameraKeyframes={scene.cameraKeyframes}
+                  heroGlbSrc={scene.heroGlbSrc}
+                  environmentGlbSrc={scene.environmentGlbSrc}
+                  sceneLocalTimeSec={0}
                 />
                 <div
                   style={{
@@ -40,9 +47,7 @@ export const ProjectVideo: React.FC<RemotionProjectVideoProps> = ({
                     pointerEvents: 'none',
                   }}
                 >
-                  <div
-                    style={{ fontSize: 22, opacity: 0.65, marginBottom: 8 }}
-                  >
+                  <div style={{ fontSize: 22, opacity: 0.65, marginBottom: 8 }}>
                     {projectTitle}
                   </div>
                   <h1
@@ -55,9 +60,25 @@ export const ProjectVideo: React.FC<RemotionProjectVideoProps> = ({
                   >
                     {scene.title ?? `Scene ${scene.sortOrder + 1}`}
                   </h1>
-                  <p style={{ fontSize: 18, opacity: 0.75, marginTop: 10 }}>
-                    {scene.animationPreset} · {scene.cameraPreset}
-                  </p>
+                  {scene.subtitleText ? (
+                    <p
+                      style={{
+                        fontSize: 26,
+                        marginTop: 16,
+                        padding: '12px 16px',
+                        background: 'rgba(0,0,0,0.55)',
+                        borderRadius: 8,
+                        maxWidth: '90%',
+                      }}
+                    >
+                      {scene.subtitleText}
+                    </p>
+                  ) : (
+                    <p style={{ fontSize: 18, opacity: 0.75, marginTop: 10 }}>
+                      {scene.animationPreset} · {scene.cameraPreset} ·{' '}
+                      {scene.environmentId}
+                    </p>
+                  )}
                 </div>
                 <Audio src={scene.audioSrc} />
               </AbsoluteFill>

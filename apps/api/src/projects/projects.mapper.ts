@@ -3,6 +3,7 @@ import type {
   ProjectResponse,
   SceneResponse,
 } from '@ai-video-studio/validation';
+import { sceneConfigSchema } from '@ai-video-studio/validation';
 
 type ProjectWithCount = Project & { _count: { scenes: number } };
 
@@ -44,6 +45,10 @@ export function toSceneResponse(scene: SceneWithLocales): SceneResponse {
     animationPreset: scene.animationPreset,
     cameraPreset: scene.cameraPreset,
     durationSec: scene.durationSec,
+    config: (() => {
+      const parsed = sceneConfigSchema.safeParse(scene.config ?? {});
+      return parsed.success ? parsed.data : {};
+    })(),
     localizations: scene.localizations.map((loc) => ({
       locale: loc.locale as 'vi' | 'en',
       narration: loc.narration,

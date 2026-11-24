@@ -12,7 +12,7 @@ Local-first AI video production studio for Windows: Ollama scripts, shared 3D st
 | 3 | Stickman scene graph compile, `data/` JSON, Three.js preview | Done — [PHASE_3_TEST_REPORT](./docs/result_testing/PHASE_3_TEST_REPORT.md) |
 | 4 | Local TTS (`audio-engine`, Python service), narration WAV in `data/audio/` | Done — [PHASE_4_TEST_REPORT](./docs/result_testing/PHASE_4_TEST_REPORT.md) |
 | 5 | Remotion MP4 export per locale (`video-engine`, FFmpeg) | Done — [RENDER.md](./docs/RENDER.md), [PHASE_5_TEST_REPORT](./docs/result_testing/PHASE_5_TEST_REPORT.md) |
-| 6+ | BullMQ worker, background jobs | Planned |
+| 6 | Animation v2, environments, timeline, BullMQ render | [PHASE_6_TEST_REPORT](./docs/result_testing/PHASE_6_TEST_REPORT.md) |
 
 ## Prerequisites
 

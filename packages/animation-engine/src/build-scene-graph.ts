@@ -19,6 +19,7 @@ export interface SceneGraphSourceScene {
   animationPreset: string | null;
   cameraPreset: string | null;
   durationSec: number | null;
+  config?: unknown;
 }
 
 export interface BuildSceneGraphInput {

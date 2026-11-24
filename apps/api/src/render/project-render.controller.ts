@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -19,6 +20,7 @@ import { z } from 'zod';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 
 import { ProjectRenderService } from './project-render.service';
+import { RenderQueueService } from './render-queue.service';
 
 const projectLocaleParamsSchema = z.object({
   publicId: z.string().uuid(),
@@ -27,7 +29,10 @@ const projectLocaleParamsSchema = z.object({
 
 @Controller()
 export class ProjectRenderController {
-  constructor(private readonly render: ProjectRenderService) {}
+  constructor(
+    private readonly render: ProjectRenderService,
+    private readonly queue: RenderQueueService,
+  ) {}
 
   @Get('v1/render/status')
   getStatus() {
@@ -44,13 +49,30 @@ export class ProjectRenderController {
 
   @Post('v1/projects/:publicId/render')
   @HttpCode(200)
-  renderProject(
+  async renderProject(
     @Param(new ZodValidationPipe(projectPublicParamsSchema))
     params: { publicId: string },
     @Body(new ZodValidationPipe(projectRenderRequestSchema))
     body: ProjectRenderRequest,
   ) {
+    if (body.async) {
+      return this.queue.enqueue(
+        params.publicId,
+        body.locale,
+        body.quality ?? 'standard',
+      );
+    }
     return this.render.renderProjectLocale(params.publicId, body);
+  }
+
+  @Get('v1/render/jobs/:jobId')
+  getRenderJob(@Param('jobId') jobId: string) {
+    return this.queue.getJob(jobId);
+  }
+
+  @Delete('v1/render/jobs/:jobId')
+  async cancelRenderJob(@Param('jobId') jobId: string) {
+    return this.queue.cancelJob(jobId);
   }
 
   @Get('v1/projects/:publicId/video/:locale')

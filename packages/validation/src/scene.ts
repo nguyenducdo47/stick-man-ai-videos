@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { SUPPORTED_LOCALES } from '@ai-video-studio/shared';
 
+import { sceneConfigSchema } from './scene-timeline.js';
+
 const localeSchema = z.enum(SUPPORTED_LOCALES);
 
 export const createSceneSchema = z.object({
@@ -16,7 +18,11 @@ export const createSceneSchema = z.object({
 
 export type CreateSceneInput = z.infer<typeof createSceneSchema>;
 
-export const updateSceneSchema = createSceneSchema.partial();
+export const updateSceneSchema = createSceneSchema
+  .partial()
+  .extend({
+    config: sceneConfigSchema.partial().optional(),
+  });
 
 export type UpdateSceneInput = z.infer<typeof updateSceneSchema>;
 
@@ -45,6 +51,7 @@ export const sceneResponseSchema = z.object({
   animationPreset: z.string().nullable(),
   cameraPreset: z.string().nullable(),
   durationSec: z.number().nullable(),
+  config: sceneConfigSchema.optional().nullable(),
   localizations: z.array(sceneLocalizationResponseSchema),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

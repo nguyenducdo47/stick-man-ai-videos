@@ -10,6 +10,7 @@ import { AiModule } from './ai/ai.module';
 import { PreviewModule } from './preview/preview.module';
 import { TtsModule } from './tts/tts.module';
 import { RenderModule } from './render/render.module';
+import { AssetsModule } from './assets/assets.module';
 import { ProjectsModule } from './projects/projects.module';
 import { SystemModule } from './system/system.module';
 import { UsersModule } from './users/users.module';
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
     PreviewModule,
     TtsModule,
     RenderModule,
+    AssetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

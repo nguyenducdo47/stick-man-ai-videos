@@ -14,6 +14,8 @@ import {
   type SceneLocalizationInput,
   projectPublicParamsSchema,
   sceneLocalizationSchema,
+  sceneTimelinePatchSchema,
+  type SceneTimelinePatch,
   type UpdateSceneInput,
   updateSceneSchema,
 } from '@ai-video-studio/validation';
@@ -63,6 +65,24 @@ export class ScenesController {
     },
   ) {
     return this.scenes.remove(params.publicId);
+  }
+
+  @Get('v1/scenes/:publicId/timeline')
+  getTimeline(
+    @Param(new ZodValidationPipe(scenePublicParamsSchema))
+    params: { publicId: string },
+  ) {
+    return this.scenes.getTimeline(params.publicId);
+  }
+
+  @Patch('v1/scenes/:publicId/timeline')
+  patchTimeline(
+    @Param(new ZodValidationPipe(scenePublicParamsSchema))
+    params: { publicId: string },
+    @Body(new ZodValidationPipe(sceneTimelinePatchSchema))
+    body: SceneTimelinePatch,
+  ) {
+    return this.scenes.patchTimeline(params.publicId, body);
   }
 
   @Patch('v1/scenes/:publicId')
