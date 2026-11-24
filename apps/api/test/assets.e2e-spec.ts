@@ -20,6 +20,18 @@ describe('Assets (e2e)', () => {
     await app.close();
   });
 
+  it('GET /v1/assets/status returns registry', async () => {
+    const res = await request(app.getHttpServer()).get('/v1/assets/status');
+    expect(res.status).toBe(200);
+    expect(res.body.registryVersion).toBeGreaterThanOrEqual(1);
+    expect(Array.isArray(res.body.items)).toBe(true);
+  });
+
+  it('HEAD hero returns 200 or 404', async () => {
+    const res = await request(app.getHttpServer()).head('/v1/assets/stickman-hero.glb');
+    expect([200, 404]).toContain(res.status);
+  });
+
   it('GET /v1/assets/stickman-hero.glb returns 200 or 404', async () => {
     const res = await request(app.getHttpServer()).get('/v1/assets/stickman-hero.glb');
     expect([200, 404]).toContain(res.status);

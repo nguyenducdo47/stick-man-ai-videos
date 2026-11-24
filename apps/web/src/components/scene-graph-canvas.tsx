@@ -3,9 +3,14 @@
 import { ENVIRONMENT_PRESETS } from '@ai-video-studio/animation-engine';
 import { PreviewStickmanCanvas } from '@ai-video-studio/stickman-renderer';
 import type { SceneGraphV2Document } from '@ai-video-studio/validation';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { environmentGlbAssetUrl, heroGlbAssetUrl } from '@/lib/studio-assets';
+import {
+  fetchStudioAssetsStatus,
+  resolveEnvGlbFromStatus,
+  resolveHeroGlbFromStatus,
+} from '@/lib/studio-assets';
 
 export function SceneGraphCanvas({
   graph,
@@ -16,6 +21,12 @@ export function SceneGraphCanvas({
 }) {
   const scene = graph.scenes[sceneIndex] ?? graph.scenes[0];
   const [scrubSec, setScrubSec] = useState(0);
+
+  const assetStatus = useQuery({
+    queryKey: ['studio-assets-status'],
+    queryFn: fetchStudioAssetsStatus,
+    staleTime: 60_000,
+  });
 
   if (!scene) {
     return (
@@ -37,8 +48,11 @@ export function SceneGraphCanvas({
         actionClips={scene.actionClips}
         interactions={scene.interactions}
         cameraKeyframes={scene.cameraKeyframes}
-        heroGlbUrl={heroGlbAssetUrl()}
-        environmentGlbUrl={environmentGlbAssetUrl(scene.environmentId)}
+        heroGlbUrl={resolveHeroGlbFromStatus(assetStatus.data)}
+        environmentGlbUrl={resolveEnvGlbFromStatus(
+          assetStatus.data,
+          scene.environmentId,
+        )}
         previewTimeSec={scrubSec}
       />
       <label className="mt-3 flex items-center gap-3 text-xs text-zinc-400">

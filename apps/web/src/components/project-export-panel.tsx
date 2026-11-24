@@ -78,7 +78,11 @@ export function ProjectExportPanel({ projectPublicId, languages }: Props) {
             `/v1/render/jobs/${encodeURIComponent(id)}`,
           );
           setJobStatus(job);
-          if (job.status === 'completed' || job.status === 'failed') {
+          if (
+            job.status === 'completed' ||
+            job.status === 'failed' ||
+            job.status === 'cancelled'
+          ) {
             clearPoll();
             setJobId(null);
             setActiveLocale(null);
@@ -147,7 +151,27 @@ export function ProjectExportPanel({ projectPublicId, languages }: Props) {
     (jobId != null &&
       jobStatus != null &&
       jobStatus.status !== 'completed' &&
-      jobStatus.status !== 'failed');
+      jobStatus.status !== 'failed' &&
+      jobStatus.status !== 'cancelled');
+
+  const cancelJob = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<{ cancelled: boolean; jobId: string }>(
+        `/v1/render/jobs/${encodeURIComponent(id)}`,
+        { method: 'DELETE' },
+      ),
+    onSuccess: () => {
+      clearPoll();
+      setJobId(null);
+      setActiveLocale(null);
+      setJobStatus((prev) =>
+        prev
+          ? { ...prev, status: 'cancelled', errorMessage: 'Cancelled by user' }
+          : null,
+      );
+    },
+    onError: (err) => setRenderError(formatApiError(err)),
+  });
 
   return (
     <section className="mt-10 rounded-xl border border-zinc-800 bg-zinc-950/40 p-6">
@@ -233,10 +257,24 @@ export function ProjectExportPanel({ projectPublicId, languages }: Props) {
       ) : null}
 
       {jobStatus && jobId ? (
-        <p className="mt-3 text-sm text-zinc-400">
-          Job {jobId.slice(0, 24)}… — {jobStatus.status}
-          {jobStatus.progress != null ? ` (${jobStatus.progress}%)` : null}
-        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-zinc-400">
+          <span>
+            Job {jobId.slice(0, 24)}… — {jobStatus.status}
+            {jobStatus.progress != null ? ` (${jobStatus.progress}%)` : null}
+          </span>
+          {jobStatus.status === 'queued' || jobStatus.status === 'active' ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-red-900 text-red-400 hover:bg-red-950"
+              disabled={cancelJob.isPending}
+              onClick={() => cancelJob.mutate(jobId)}
+            >
+              Cancel job
+            </Button>
+          ) : null}
+        </div>
       ) : null}
 
       {renderError ? (

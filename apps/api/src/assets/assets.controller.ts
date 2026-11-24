@@ -1,4 +1,12 @@
-import { Controller, Get, NotFoundException, Param, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Head,
+  HttpCode,
+  NotFoundException,
+  Param,
+  Res,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   environmentGlbFile,
@@ -13,13 +21,50 @@ import { access } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import type { Response } from 'express';
 
+import { AssetsStatusService } from './assets-status.service';
+
 @Controller()
 export class AssetsController {
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly status: AssetsStatusService,
+  ) {}
 
   private storageRoot(): string {
     const configured = this.config.get<string>('STORAGE_ROOT') ?? './data';
     return resolveDataRoot(process.cwd(), configured);
+  }
+
+  @Get('v1/assets/status')
+  getAssetStatus() {
+    return this.status.getStatus();
+  }
+
+  @Head('v1/assets/stickman-hero.glb')
+  @HttpCode(200)
+  async headStickmanHero(@Res() res: Response) {
+    const ok = await this.status.headHeroAvailable();
+    if (!ok) {
+      res.status(404).end();
+      return;
+    }
+    res.status(200).end();
+  }
+
+  @Head('v1/assets/environments/:fileName')
+  @HttpCode(200)
+  async headEnvironmentGlb(
+    @Param('fileName') fileName: string,
+    @Res() res: Response,
+  ) {
+    const base = fileName.replace(/\.glb$/i, '');
+    const parsed = environmentIdSchema.safeParse(base);
+    if (!parsed.success || parsed.data === 'studio_grid') {
+      res.status(404).end();
+      return;
+    }
+    const ok = await this.status.headEnvironmentAvailable(parsed.data);
+    res.status(ok ? 200 : 404).end();
   }
 
   @Get('v1/assets/stickman-hero.glb')

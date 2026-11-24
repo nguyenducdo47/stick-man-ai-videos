@@ -3,6 +3,8 @@ import { z } from 'zod';
 export const ENVIRONMENT_ID_LIST = [
   'studio_grid',
   'living_room',
+  'bedroom',
+  'bathroom',
   'street',
   'park',
   'office',

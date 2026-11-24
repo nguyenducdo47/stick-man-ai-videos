@@ -12,12 +12,17 @@ import { RENDER_QUEUE_NAME, SUPPORTED_LOCALES } from '@ai-video-studio/shared';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
+import { RenderAbortRegistry } from './render-abort.registry';
+
 @Injectable()
 export class RenderQueueService implements OnModuleDestroy {
   private connection: IORedis | null = null;
   private queue: Queue | null = null;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly abortRegistry: RenderAbortRegistry,
+  ) {}
 
   private redisConnection(): IORedis {
     if (!this.connection) {
@@ -84,20 +89,27 @@ export class RenderQueueService implements OnModuleDestroy {
       locale: (typeof SUPPORTED_LOCALES)[number];
     };
     const state = await job.getState();
+    const failedReason = job.failedReason ?? '';
+    const cancelled =
+      state === 'failed' && /cancelled/i.test(failedReason);
     const status =
       state === 'completed'
         ? 'completed'
-        : state === 'failed'
-          ? 'failed'
-          : state === 'active'
-            ? 'active'
-            : 'queued';
+        : cancelled
+          ? 'cancelled'
+          : state === 'failed'
+            ? 'failed'
+            : state === 'active'
+              ? 'active'
+              : 'queued';
     const progress =
       typeof job.progress === 'number'
         ? job.progress
         : Number(job.progress) || 0;
-    const failedReason =
-      status === 'failed' ? job.failedReason ?? 'Render failed' : null;
+    const errorMessage =
+      status === 'failed' || status === 'cancelled'
+        ? job.failedReason ?? (status === 'cancelled' ? 'Cancelled' : 'Render failed')
+        : null;
 
     return renderJobResponseSchema.parse({
       jobId: String(job.id),
@@ -105,7 +117,7 @@ export class RenderQueueService implements OnModuleDestroy {
       projectPublicId: data.projectPublicId,
       locale: data.locale,
       progress,
-      errorMessage: failedReason,
+      errorMessage,
     });
   }
 
@@ -114,10 +126,19 @@ export class RenderQueueService implements OnModuleDestroy {
     if (!job) {
       throw new ServiceUnavailableException(`Unknown render job ${jobId}`);
     }
-  if ((await job.getState()) === 'active') {
-      throw new ServiceUnavailableException(
-        'Cannot cancel an active render job yet — wait for completion.',
+    const data = job.data as {
+      projectPublicId: string;
+      locale: string;
+    };
+    const state = await job.getState();
+    if (state === 'active') {
+      this.abortRegistry.abort(
+        this.abortRegistry.key(data.projectPublicId, data.locale),
       );
+      return { cancelled: true, jobId };
+    }
+    if (state === 'completed') {
+      throw new ServiceUnavailableException('Render job already completed');
     }
     await job.remove();
     return { cancelled: true, jobId };

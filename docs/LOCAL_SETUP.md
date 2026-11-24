@@ -93,6 +93,12 @@ Bật **Redis** trong Laragon trước khi dùng render async (checkbox “Queue
 
 Đặt model có license tại `data/assets/characters/stickman-hero.glb` (xem `data/assets/characters/README.md`). Không tự động tải model. API phục vụ file qua `GET /v1/assets/stickman-hero.glb`.
 
+## Phase 7 — assets & E2E
+
+- Web: **Settings → Assets** (`/settings/assets`) — bảng registry + hướng dẫn `scripts/install-cc0-glb-assets.mjs`.
+- `GET /v1/assets/status` — probe file GLB trên đĩa.
+- Playwright (lần đầu): `pnpm exec playwright install chromium`, rồi `pnpm test:e2e` (API nên chạy; web dev đang mở thì `PLAYWRIGHT_NO_WEB_SERVER=1`).
+
 ## FFmpeg
 
 Đặt `FFMPEG_PATH` trong `.env` (ví dụ build Laragon) hoặc để trống — API dùng ffmpeg đi kèm Remotion khi tìm thấy.

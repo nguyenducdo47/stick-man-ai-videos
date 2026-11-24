@@ -43,6 +43,8 @@ import { SceneGraphService } from '../preview/scene-graph.service';
 import { ProjectsService } from '../projects/projects.service';
 import { PrismaService } from '../prisma/prisma.service';
 
+import { RenderAbortRegistry } from './render-abort.registry';
+
 @Injectable()
 export class ProjectRenderService {
   private queue: Promise<unknown> = Promise.resolve();
@@ -52,6 +54,7 @@ export class ProjectRenderService {
     private readonly projects: ProjectsService,
     private readonly sceneGraph: SceneGraphService,
     private readonly config: ConfigService,
+    private readonly abortRegistry: RenderAbortRegistry,
   ) {}
 
   videoUrl(projectPublicId: string, locale: string, videoPath: string | null) {
@@ -291,6 +294,9 @@ export class ProjectRenderService {
     let errorMessage: string | null = null;
     let durationSec: number | null = null;
 
+    const abortKey = this.abortRegistry.key(projectPublicId, locale);
+    const abortController = this.abortRegistry.register(abortKey);
+
     try {
       const assetsDir = join(root, 'assets');
       const result = await renderProjectVideo({
@@ -301,6 +307,7 @@ export class ProjectRenderService {
         bundleCacheDir,
         assetsPublicDir: assetsDir,
         quality,
+        cancelSignal: abortController.signal,
       });
       durationSec = result.durationSec;
       const validation = await validateRenderedMp4(
@@ -314,7 +321,13 @@ export class ProjectRenderService {
       }
     } catch (err) {
       status = 'FAILED';
-      errorMessage = err instanceof Error ? err.message : 'Render failed';
+      if (abortController.signal.aborted) {
+        errorMessage = 'Render cancelled';
+      } else {
+        errorMessage = err instanceof Error ? err.message : 'Render failed';
+      }
+    } finally {
+      this.abortRegistry.clear(abortKey);
     }
 
     const now = new Date();
@@ -342,6 +355,9 @@ export class ProjectRenderService {
     });
 
     if (status === 'FAILED') {
+      if (errorMessage === 'Render cancelled') {
+        throw new BadRequestException('Render cancelled');
+      }
       throw new BadRequestException(errorMessage ?? 'Render failed');
     }
 

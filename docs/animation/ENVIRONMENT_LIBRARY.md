@@ -9,6 +9,8 @@
 | `street` | Sunny sidewalk, grass, red building, hoop | suburban / park edge |
 | `park` | Pine trees, pond, gazebo, stone path | matches outdoor references |
 | `office` | Drop ceiling tiles, orange chairs, binders | tan carpet floor |
+| `bedroom` | Bed, nightstand, soft wall | Phase 7 |
+| `bathroom` | Tiles, tub, mirror | Phase 7 |
 
 Set per scene via `Scene.config.environmentId` in DB or v2 graph `environmentId`.
 

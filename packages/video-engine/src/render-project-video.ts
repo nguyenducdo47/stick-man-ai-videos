@@ -1,5 +1,5 @@
 import { bundle } from '@remotion/bundler';
-import { renderMedia, selectComposition } from '@remotion/renderer';
+import { makeCancelSignal, renderMedia, selectComposition } from '@remotion/renderer';
 import { createRequire } from 'node:module';
 import { mkdir, rm } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
@@ -28,10 +28,11 @@ export type RenderProjectVideoInput = {
   bundleCacheDir?: string;
   assetsPublicDir?: string;
   quality?: 'preview' | 'standard' | 'high' | 'hq';
+  cancelSignal?: AbortSignal;
 };
 
 /** Bump when remotion composition changes — avoids stale webpack bundle. */
-const REMOTION_BUNDLE_REVISION = 'stickman-6-v7';
+const REMOTION_BUNDLE_REVISION = 'stickman-7-v1';
 
 const QUALITY_PRESETS = {
   preview: { width: 960, height: 540, jpegQuality: 55, videoBitrate: '1.5M' },
@@ -150,7 +151,12 @@ export async function renderProjectVideo(
 
   const scratchOutput = renderScratchOutputPath(finalOutput);
 
-  await renderMedia({
+  const { cancelSignal, cancel } = makeCancelSignal();
+  const onAbort = () => cancel();
+  input.cancelSignal?.addEventListener('abort', onAbort, { once: true });
+
+  try {
+    await renderMedia({
     composition,
     serveUrl,
     codec: 'h264',
@@ -163,7 +169,11 @@ export async function renderProjectVideo(
       disableWebSecurity: true,
     },
     videoBitrate: preset.videoBitrate,
+    cancelSignal,
   });
+  } finally {
+    input.cancelSignal?.removeEventListener('abort', onAbort);
+  }
 
   await commitRenderOutput(scratchOutput, finalOutput);
 

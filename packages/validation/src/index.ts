@@ -20,3 +20,4 @@ export * from './environments.js';
 export * from './cameras.js';
 export * from './tts.js';
 export * from './render.js';
+export * from './assets.js';

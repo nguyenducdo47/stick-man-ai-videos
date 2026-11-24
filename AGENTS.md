@@ -21,6 +21,8 @@ pnpm install
 pnpm build
 pnpm dev
 pnpm --filter @ai-video-studio/api test
+pnpm --filter @ai-video-studio/api test:e2e
+pnpm test:e2e
 ```
 
 ## Cursor rules

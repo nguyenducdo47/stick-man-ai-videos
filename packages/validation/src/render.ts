@@ -108,7 +108,7 @@ export type RenderStatusResponse = z.infer<typeof renderStatusResponseSchema>;
 
 export const renderJobResponseSchema = z.object({
   jobId: z.string(),
-  status: z.enum(['queued', 'active', 'completed', 'failed']),
+  status: z.enum(['queued', 'active', 'completed', 'failed', 'cancelled']),
   projectPublicId: z.string().uuid(),
   locale: localeSchema,
   progress: z.number().min(0).max(100).optional(),

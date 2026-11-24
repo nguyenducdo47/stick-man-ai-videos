@@ -318,12 +318,88 @@ export function OfficeIllustrationScene() {
   );
 }
 
+function BedroomIllustrationScene() {
+  return (
+    <group>
+      <mesh position={[-2.8, 2.2, -3]} receiveShadow>
+        <boxGeometry args={[6, 4.4, 0.12]} />
+        <Matte color="#e0e7ff" />
+      </mesh>
+      <mesh position={[0, 0.55, -2.2]} castShadow receiveShadow>
+        <boxGeometry args={[2.4, 0.35, 3.2]} />
+        <Matte color="#fafafa" />
+      </mesh>
+      <mesh position={[0, 0.85, -2.2]} castShadow>
+        <boxGeometry args={[2.3, 0.55, 3]} />
+        <Matte color="#a5b4fc" emissive="#6366f1" />
+      </mesh>
+      <mesh position={[0, 0.35, -2.85]} castShadow>
+        <boxGeometry args={[2.5, 0.5, 0.12]} />
+        <Matte color="#71717a" />
+      </mesh>
+      <mesh position={[1.5, 0.42, -1.2]} castShadow>
+        <boxGeometry args={[0.55, 0.45, 0.45]} />
+        <Matte color="#525252" />
+      </mesh>
+      <mesh position={[1.5, 0.82, -1.2]} castShadow>
+        <boxGeometry args={[0.2, 0.45, 0.2]} />
+        <Matte color="#fef3c7" emissive="#fbbf24" />
+      </mesh>
+      <mesh position={[-2.2, 1.6, -0.4]} castShadow>
+        <boxGeometry args={[0.9, 2.2, 0.08]} />
+        <Matte color="#94a3b8" />
+      </mesh>
+    </group>
+  );
+}
+
+function BathroomIllustrationScene() {
+  return (
+    <group>
+      <mesh position={[0, 2.5, -3.2]} receiveShadow>
+        <boxGeometry args={[5.5, 5, 0.12]} />
+        <Matte color="#f0fdfa" />
+      </mesh>
+      {[-1.6, 0, 1.6].map((x, i) => (
+        <mesh key={`tile-${i}`} position={[x, 0.02, -2.5 + (i % 2) * 0.3]} receiveShadow>
+          <boxGeometry args={[0.9, 0.04, 0.9]} />
+          <Matte color="#e4e4e7" />
+        </mesh>
+      ))}
+      <mesh position={[1.4, 0.35, -2]} castShadow receiveShadow>
+        <boxGeometry args={[1.6, 0.7, 2.2]} />
+        <Matte color="#f8fafc" />
+      </mesh>
+      <mesh position={[1.4, 0.55, -2]} castShadow>
+        <boxGeometry args={[1.4, 0.35, 2]} />
+        <Matte color="#bae6fd" />
+      </mesh>
+      <mesh position={[-1.2, 1.2, -2.8]} receiveShadow>
+        <boxGeometry args={[1.2, 1.4, 0.06]} />
+        <Matte color="#cbd5e1" />
+      </mesh>
+      <mesh position={[-1.2, 1.2, -2.72]} receiveShadow>
+        <planeGeometry args={[1, 1.2]} />
+        <Matte color="#e2e8f0" emissive="#94a3b8" />
+      </mesh>
+      <mesh position={[-0.3, 0.5, -1.2]} castShadow>
+        <boxGeometry args={[0.35, 0.85, 0.35]} />
+        <Matte color="#fafafa" />
+      </mesh>
+    </group>
+  );
+}
+
 export function IllustrationEnvironmentScene({ environmentId }: { environmentId: EnvironmentId }) {
   switch (environmentId) {
     case 'park':
       return <ParkIllustrationScene />;
     case 'living_room':
       return <LivingRoomIllustrationScene />;
+    case 'bedroom':
+      return <BedroomIllustrationScene />;
+    case 'bathroom':
+      return <BathroomIllustrationScene />;
     case 'street':
       return <StreetIllustrationScene />;
     case 'office':

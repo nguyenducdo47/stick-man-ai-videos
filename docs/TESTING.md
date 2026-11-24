@@ -9,7 +9,20 @@
 | `pnpm test` | Turbo test (API unit when configured) |
 | `pnpm --filter @ai-video-studio/api test` | API unit tests |
 | `pnpm --filter @ai-video-studio/api test:e2e` | API integration (requires PostgreSQL + `.env`) |
+| `pnpm test:e2e` | Playwright UI/API smoke (Phase 7; starts web or reuse dev server) |
+| `RUN_RENDER_SMOKE=1 pnpm --filter @ai-video-studio/api test:e2e` | Optional full render status check |
 | `pnpm build` | Full monorepo production build |
+
+### Playwright (Phase 7)
+
+```powershell
+pnpm install
+pnpm exec playwright install chromium
+# Terminal A: API start:dev ; optional B: web dev
+pnpm test:e2e
+```
+
+Env: `PLAYWRIGHT_BASE_URL` (default `http://127.0.0.1:3000`), `PLAYWRIGHT_API_URL` (default `3001`), `PLAYWRIGHT_NO_WEB_SERVER=1` if web already running.
 
 ## Phase 1 manual checklist
 
@@ -68,3 +81,13 @@ See [PHASE_4_TEST_REPORT.md](./result_testing/PHASE_4_TEST_REPORT.md).
 - [ ] Phase 1–4 regression: scene graph, TTS, dashboard
 
 See [PHASE_5_TEST_REPORT.md](./result_testing/PHASE_5_TEST_REPORT.md).
+
+## Phase 7 manual checklist
+
+- [ ] `GET /v1/assets/status` lists hero + environments including `bedroom` / `bathroom`
+- [ ] `/settings/assets` — onboarding steps + installed/procedural table
+- [ ] 3D preview: no console flood of 404 when GLB missing
+- [ ] Async render: **Cancel job** while `active` (Redis + worker)
+- [ ] `pnpm test:e2e` passes with API + web reachable
+
+See [PHASE_7_TEST_REPORT.md](./result_testing/PHASE_7_TEST_REPORT.md).

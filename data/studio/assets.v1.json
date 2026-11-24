@@ -19,6 +19,24 @@
       "notes": "Interior diorama — procedural fallback when missing."
     },
     {
+      "id": "env-bedroom",
+      "kind": "environment",
+      "environmentId": "bedroom",
+      "path": "assets/environments/bedroom.glb",
+      "license": "user-provided-cc0",
+      "polyCountEstimate": null,
+      "notes": "Bedroom GLB (Phase 7)"
+    },
+    {
+      "id": "env-bathroom",
+      "kind": "environment",
+      "environmentId": "bathroom",
+      "path": "assets/environments/bathroom.glb",
+      "license": "user-provided-cc0",
+      "polyCountEstimate": null,
+      "notes": "Bathroom GLB (Phase 7)"
+    },
+    {
       "id": "env-street",
       "kind": "environment",
       "environmentId": "street",

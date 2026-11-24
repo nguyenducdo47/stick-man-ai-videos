@@ -52,6 +52,22 @@ const MANIFEST = [
     doc: 'Office desk/chair room GLB',
     url: null,
   },
+  {
+    id: 'bedroom',
+    dest: join(envDir, 'bedroom.glb'),
+    license: 'User-provided CC0',
+    sizeHint: '5–40MB',
+    doc: 'Bedroom interior GLB (Phase 7)',
+    url: null,
+  },
+  {
+    id: 'bathroom',
+    dest: join(envDir, 'bathroom.glb'),
+    license: 'User-provided CC0',
+    sizeHint: '5–40MB',
+    doc: 'Bathroom interior GLB (Phase 7)',
+    url: null,
+  },
 ];
 
 const SMOKE_URLS = {
@@ -88,7 +104,14 @@ async function smokeTest() {
     join(charsDir, 'stickman-hero.glb'),
   );
   const envBytes = await fetchToFile(SMOKE_URLS.env, join(envDir, '_env-smoke.glb'));
-  for (const id of ['living_room', 'street', 'park', 'office']) {
+  for (const id of [
+    'living_room',
+    'street',
+    'park',
+    'office',
+    'bedroom',
+    'bathroom',
+  ]) {
     copyFileSync(join(envDir, '_env-smoke.glb'), join(envDir, `${id}.glb`));
   }
   const log = {
